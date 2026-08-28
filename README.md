@@ -1,67 +1,60 @@
-# Payload Blank Template
+# Garanti Yatırım Ortaklığı
 
-This template comes configured with the bare minimum to get started on anything you need.
+Kurumsal site: [Next.js](https://nextjs.org) 16 + [Payload](https://payloadcms.com) 3 + PostgreSQL.
 
-## Quick start
+Site, admin paneli (`/admin`) ve API aynı Node sürecinde çalışır. Veritabanı PostgreSQL’dir; MongoDB kullanılmaz.
 
-This template can be deployed directly from our Cloud hosting and it will setup MongoDB and cloud S3 object storage for media.
+## Gereksinimler
 
-## Quick Start - local setup
+- Node.js 20.9+
+- pnpm 9+
+- PostgreSQL 16 (yerel kurulum veya aşağıdaki Docker)
 
-To spin up this template locally, follow these steps:
+## Geliştirme
 
-### Clone
+```bash
+cp .env.example .env
+```
 
-After you click the `Deploy` button above, you'll want to have standalone copy of this repo on your machine. If you've already cloned this repo, skip to [Development](#development).
+`.env` içinde en az şunlar olmalı:
 
-### Development
+```env
+DATABASE_URL=postgres://gyo:gyo@127.0.0.1:5432/gyo_cms
+PAYLOAD_SECRET=uzun-rastgele-bir-deger
+NEXT_PUBLIC_SITE_URL=http://localhost:3000
+```
 
-1. First [clone the repo](#clone) if you have not done so already
-2. `cd my-project && cp .env.example .env` to copy the example environment variables. You'll need to add the `MONGODB_URL` from your Cloud project to your `.env` if you want to use S3 storage and the MongoDB database that was created for you.
+Postgres’i Docker ile ayağa kaldırmak için:
 
-3. `pnpm install && pnpm dev` to install dependencies and start the dev server
-4. open `http://localhost:3000` to open the app in your browser
+```bash
+docker compose up -d
+```
 
-That's it! Changes made in `./src` will be reflected in your app. Follow the on-screen instructions to login and create your first admin user. Then check out [Production](#production) once you're ready to build and serve your app, and [Deployment](#deployment) when you're ready to go live.
+Makinede zaten 5432’de bir Postgres varsa Docker’a gerek yok; `DATABASE_URL`’i o örneğe göre ayarlayın.
 
-#### Docker (Optional)
+```bash
+pnpm install
+pnpm dev
+```
 
-If you prefer to use Docker for local development instead of a local MongoDB instance, the provided docker-compose.yml file can be used.
+- Site: http://localhost:3000
+- Admin: http://localhost:3000/admin
 
-To do so, follow these steps:
+İlk açılışta admin kullanıcısı oluşturulur. Medya ve PDF’ler `S3_BUCKET` tanımlı değilse `media/` ve `documents/` klasörlerine yazılır.
 
-- Modify the `MONGODB_URL` in your `.env` file to `mongodb://127.0.0.1/<dbname>`
-- Modify the `docker-compose.yml` file's `MONGODB_URL` to match the above `<dbname>`
-- Run `docker-compose up` to start the database, optionally pass `-d` to run in the background.
+## Üretim (tek sunucu)
 
-## How it works
+Aynı makinede Node + PostgreSQL + reverse proxy (nginx/Caddy) yeter. S3 zorunlu değildir.
 
-The Payload config is tailored specifically to the needs of most websites. It is pre-configured in the following ways:
+```bash
+pnpm build
+pnpm start
+```
 
-### Collections
+Zorunlu ortam değişkenleri: `DATABASE_URL`, `PAYLOAD_SECRET`, `NEXT_PUBLIC_SITE_URL`. İsteğe bağlı SMTP, reCAPTCHA, GA4 ve S3/R2 için `.env.example` dosyasına bakın.
 
-See the [Collections](https://payloadcms.com/docs/configuration/collections) docs for details on how to extend this functionality.
+Git deposunda CMS verisi ve yüklenen dosyalar yoktur. Taşırken Postgres yedeği ile `media/` ve `documents/` klasörlerini de kopyalayın.
 
-- #### Users (Authentication)
+## Eski siteden içerik
 
-  Users are auth-enabled collections that have access to the admin panel.
-
-  For additional help, see the official [Auth Example](https://github.com/payloadcms/payload/tree/3.x/examples/auth) or the [Authentication](https://payloadcms.com/docs/authentication/overview#authentication-overview) docs.
-
-- #### Media
-
-  This is the uploads enabled collection. It features pre-configured sizes, focal point and manual resizing to help you manage your pictures.
-
-### Docker
-
-Alternatively, you can use [Docker](https://www.docker.com) to spin up this template locally. To do so, follow these steps:
-
-1. Follow [steps 1 and 2 from above](#development), the docker-compose file will automatically use the `.env` file in your project root
-1. Next run `docker-compose up`
-1. Follow [steps 4 and 5 from above](#development) to login and create your first admin user
-
-That's it! The Docker instance will help you get up and running quickly while also standardizing the development environment across your teams.
-
-## Questions
-
-If you have any issues or questions, reach out to us on [Discord](https://discord.com/invite/payload) or start a [GitHub discussion](https://github.com/payloadcms/payload/discussions).
+İçerik boş bir veritabanına script’lerle aktarılabilir (`pnpm migrate:fetch` … `pnpm migrate:seed`). Bu adımlar eski siteye erişim ve `.migration/` altında bir anlık görüntü ister; günlük geliştirme için gerekli değildir.
