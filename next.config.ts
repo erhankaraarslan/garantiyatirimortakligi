@@ -6,6 +6,11 @@ import { fileURLToPath } from 'url'
 const __filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(__filename)
 
+/*
+ * Eski URL'lerin 301 tablosu burada değil src/proxy.ts içinde işleniyor:
+ * redirects() path-to-regexp kullanıyor ve eski dosya adlarındaki boşluk,
+ * parantez ve Türkçe karakterlerle eşleşemiyor.
+ */
 const nextConfig: NextConfig = {
   images: {
     localPatterns: [

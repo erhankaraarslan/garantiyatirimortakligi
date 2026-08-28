@@ -1,0 +1,143 @@
+/*
+ * Garanti BBVA tasarım dili tokenları.
+ * Değerler garantibbvakripto.com.tr'den tarayıcı üzerinden ölçülerek alındı;
+ * kaynak ekran görüntüleri docs/design-reference/ altında.
+ *
+ * @theme içindeki tokenlar Tailwind utility'lerine dönüşür:
+ *   --color-brand-blue  -> bg-brand-blue / text-brand-blue / border-brand-blue
+ *   --container-page    -> max-w-page
+ *   --text-h1           -> text-h1
+ */
+
+@theme {
+  /* --- Marka renkleri --- */
+  --color-brand-blue: #1464a5; /* birincil buton, marka mavisi */
+  --color-brand-blue-dark: #0050a5; /* H1 başlıklar */
+  --color-brand-blue-mid: #225a8f; /* hover */
+  --color-brand-blue-light: #49a5e6; /* ikon, vurgu */
+  --color-navy: #062047; /* iç sayfa hero, footer */
+  --color-teal: #028484; /* ikincil CTA, aktif sekme */
+  --color-teal-light: #2dcccd;
+  --color-green: #009242; /* aktif durum, başarı */
+
+  /* --- Nötrler --- */
+  --color-ink: #1d212f; /* koyu metin */
+  --color-body: #6d7278; /* gövde metni */
+  --color-muted: #666666; /* ikincil metin */
+  --color-surface: #ffffff; /* kart */
+  --color-surface-alt: #f7f8f9; /* bölüm arkaplanı */
+  --color-surface-body: #f4f4f4; /* sayfa arkaplanı */
+  --color-surface-inactive: #efefef; /* pasif buton */
+  --color-bar: #ebeff8; /* üst marka barı */
+  --color-bar-border: #dde3ed;
+  --color-divider: #c9d1de;
+
+  /* --- Tipografi --- */
+  --font-sans: var(--font-public-sans), -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+
+  --text-h1: 3rem; /* 48px */
+  --text-h1--line-height: 1.1;
+  --text-h1--font-weight: 700;
+  --text-h2: 2.25rem; /* 36px */
+  --text-h2--line-height: 1.2;
+  --text-h2--font-weight: 300; /* referansta H2 light ağırlıkta */
+  --text-h3: 1.125rem; /* 18px - referansta 15px, kart başlıkları için yükselttik */
+  --text-h3--line-height: 1.5;
+  --text-h3--font-weight: 500;
+  /* Tailwind'in varsayılan `text-base` adını kullanıyoruz: --color-body ile
+     çakışmaması için (ikisi de `text-body` utility'sini üretirdi). */
+  --text-base: 0.9375rem; /* 15px gövde */
+  --text-base--line-height: 1.6;
+  --text-btn: 1.0625rem; /* 17px buton */
+  --text-nav: 0.875rem; /* 14px nav link */
+
+  /* --- Layout --- */
+  --container-page: 1200px;
+  --container-bar: 1240px;
+  --container-prose: 760px;
+}
+
+@layer base {
+  :root {
+    /* Sticky header hesapları; @theme dışında tutuldu çünkü utility gerekmiyor */
+    --bar-height: 44px;
+    --header-height: 68px;
+    --stack-offset: calc(var(--bar-height) + var(--header-height));
+    --hero-inner-height: 220px; /* iç sayfa hero */
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-padding-top: var(--stack-offset);
+    -webkit-text-size-adjust: 100%;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    margin: 0;
+    background-color: var(--color-surface-body);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-size: var(--text-base);
+    line-height: 1.6;
+  }
+
+  /*
+   * Referans sitede hiçbir öğede yuvarlatma yok; BBVA dili keskin köşeli.
+   * Tarayıcı varsayılanlarını sıfırlayarak dili tutarlı tutuyoruz.
+   */
+  button,
+  input,
+  select,
+  textarea {
+    border-radius: 0;
+    font: inherit;
+    color: inherit;
+  }
+
+  /*
+   * next/image `fill` mutlak konumlandırma + height:100% kullanır. Genel
+   * `height: auto` kuralı mozaik/kart görsellerini yüksekliği 0'a sıkıştırıyordu.
+   */
+  img:not([data-nimg='fill']),
+  svg {
+    max-width: 100%;
+    height: auto;
+  }
+
+  .home-mosaic {
+    /* Yerleşim HomeMosaic bileşeninde inline grid-area ile veriliyor. */
+  }
+
+  @media (max-width: 639px) {
+    .home-mosaic {
+      min-height: 0 !important;
+      grid-template-columns: 1fr 1fr !important;
+      grid-template-rows: none !important;
+      grid-template-areas: none !important;
+    }
+    .home-mosaic > li {
+      grid-area: auto !important;
+      min-height: 160px;
+      position: relative;
+    }
+    .home-mosaic > li:nth-child(3) {
+      grid-column: 1 / -1;
+      min-height: 200px;
+    }
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-brand-blue);
+    outline-offset: 2px;
+  }
+}
+
+@utility container-page {
+  margin-inline: auto;
+  max-width: var(--container-page);
+  padding-inline: 1rem;
+}

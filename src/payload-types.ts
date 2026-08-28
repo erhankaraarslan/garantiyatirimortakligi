@@ -67,8 +67,17 @@ export interface Config {
   };
   blocks: {};
   collections: {
-    users: User;
+    pages: Page;
+    'document-archive-items': DocumentArchiveItem;
+    people: Person;
+    'commission-years': CommissionYear;
+    faqs: Faq;
+    awards: Award;
+    documents: Document;
     media: Media;
+    'contact-messages': ContactMessage;
+    users: User;
+    search: Search;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -76,20 +85,37 @@ export interface Config {
   };
   collectionsJoins: {};
   collectionsSelect: {
-    users: UsersSelect<false> | UsersSelect<true>;
+    pages: PagesSelect<false> | PagesSelect<true>;
+    'document-archive-items': DocumentArchiveItemsSelect<false> | DocumentArchiveItemsSelect<true>;
+    people: PeopleSelect<false> | PeopleSelect<true>;
+    'commission-years': CommissionYearsSelect<false> | CommissionYearsSelect<true>;
+    faqs: FaqsSelect<false> | FaqsSelect<true>;
+    awards: AwardsSelect<false> | AwardsSelect<true>;
+    documents: DocumentsSelect<false> | DocumentsSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
+    'contact-messages': ContactMessagesSelect<false> | ContactMessagesSelect<true>;
+    users: UsersSelect<false> | UsersSelect<true>;
+    search: SearchSelect<false> | SearchSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
   };
   db: {
-    defaultIDType: string;
+    defaultIDType: number;
   };
-  fallbackLocale: null;
-  globals: {};
-  globalsSelect: {};
-  locale: null;
+  fallbackLocale: ('false' | 'none' | 'null') | false | null | ('tr' | 'en') | ('tr' | 'en')[];
+  globals: {
+    navigation: Navigation;
+    'site-settings': SiteSetting;
+    'contact-info': ContactInfo;
+  };
+  globalsSelect: {
+    navigation: NavigationSelect<false> | NavigationSelect<true>;
+    'site-settings': SiteSettingsSelect<false> | SiteSettingsSelect<true>;
+    'contact-info': ContactInfoSelect<false> | ContactInfoSelect<true>;
+  };
+  locale: 'tr' | 'en';
   widgets: {
     collections: CollectionsWidget;
   };
@@ -119,10 +145,392 @@ export interface UserAuthOperations {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "pages".
+ */
+export interface Page {
+  id: number;
+  title: string;
+  /**
+   * URL parçası. Boş bırakılırsa başlıktan üretilir.
+   */
+  slug: string;
+  /**
+   * Breadcrumb ve yan menü bu zincirden otomatik üretilir.
+   */
+  parent?: (number | null) | Page;
+  template:
+    | 'content'
+    | 'documentArchive'
+    | 'bioAccordion'
+    | 'dataTable'
+    | 'faq'
+    | 'contact'
+    | 'gallery'
+    | 'sitemap'
+    | 'landing';
+  /**
+   * Yan menü ve site haritasındaki sıralama.
+   */
+  order?: number | null;
+  /**
+   * Bu sayfada listelenecek doküman grubunun anahtarı.
+   */
+  archiveCategory?: string | null;
+  commissionScope?: ('none' | 'all' | 'single') | null;
+  commissionYear?: number | null;
+  bioGroup?: ('board' | 'executives') | null;
+  hero?: {
+    headline?: string | null;
+    subline?: string | null;
+    ctaLabel?: string | null;
+    ctaPage?: (number | null) | Page;
+    image?: (number | null) | Media;
+    /**
+     * Referans sitedeki hero üzerindeki dairesel rozetler.
+     */
+    badges?:
+      | {
+          value: string;
+          label: string;
+          id?: string | null;
+        }[]
+      | null;
+  };
+  shortcuts?:
+    | {
+        title: string;
+        description?: string | null;
+        page: number | Page;
+        id?: string | null;
+      }[]
+    | null;
+  mosaic?:
+    | {
+        title: string;
+        image: number | Media;
+        page: number | Page;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Şablona özel bölümlerin üstünde gösterilir. Ör. Sürekli Bilgilendirme Formu sayfasında komisyon accordion’unun üstündeki form içeriği burada durur.
+   */
+  content?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Doluysa içerik bu HTML’den çizilir (Lexical tabloları ezmez). Yalnızca göç script’i yazar.
+   */
+  legacyHtml?: string | null;
+  attachments?:
+    | {
+        label?: string | null;
+        document: number | Document;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Doldurulursa menüde bu sayfa dış linke yönlendirir (ör. KAP, MKK).
+   */
+  externalUrl?: string | null;
+  /**
+   * Eski sitedeki TR ve EN .aspx yolları. 301 yönlendirmeleri buradan üretilir. Bilinçli olarak localized değil: her iki dilin yolu da aynı dokümana yönlenmeli.
+   */
+  legacyPaths?:
+    | {
+        path: string;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Bu dildeki içeriğin durumu.
+   */
+  translationStatus?: ('complete' | 'missing' | 'review') | null;
+  meta?: {
+    title?: string | null;
+    description?: string | null;
+    /**
+     * Maximum upload file size: 12MB. Recommended file size for images is <500KB.
+     */
+    image?: (number | null) | Media;
+  };
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "media".
+ */
+export interface Media {
+  id: number;
+  /**
+   * Ekran okuyucular için görsel açıklaması. Erişilebilirlik zorunluluğu.
+   */
+  alt: string;
+  /**
+   * Eski sitedeki yol. 301 yönlendirme için korunuyor.
+   */
+  originalPath?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
+  sizes?: {
+    thumbnail?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+    card?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+    hero?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+  };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "documents".
+ */
+export interface Document {
+  id: number;
+  title: string;
+  /**
+   * Eski sitedeki yol. 301 yönlendirme için korunuyor, elle değiştirilmemeli.
+   */
+  originalPath?: string | null;
+  publishedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "document-archive-items".
+ */
+export interface DocumentArchiveItem {
+  id: number;
+  /**
+   * Sayfanın archiveCategory değeriyle eşleşir (ör. faaliyet-raporlari).
+   */
+  category: string;
+  language: 'tr' | 'en';
+  year: number;
+  /**
+   * Accordion başlığı. Boşsa yıl kullanılır (eski sitede "2026 Yılı Faaliyet Raporu" gibi başlıklar var).
+   */
+  groupLabel?: string | null;
+  /**
+   * Ör. "1. Çeyrek", "06 - 25", "Yıllık".
+   */
+  period?: string | null;
+  label: string;
+  document: number | Document;
+  order?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "people".
+ */
+export interface Person {
+  id: number;
+  name: string;
+  /**
+   * Ör. "Yönetim Kurulu Başkanı", "Bağımsız Yönetim Kurulu Üyesi".
+   */
+  role: string;
+  group: 'board' | 'executives';
+  bio?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  photo?: (number | null) | Media;
+  order?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "commission-years".
+ */
+export interface CommissionYear {
+  id: number;
+  year: number;
+  heading?: string | null;
+  intermediary?: string | null;
+  periods: {
+    /**
+     * Ör. "Ocak - Mart 2026".
+     */
+    label: string;
+    id?: string | null;
+  }[];
+  rows: {
+    metric: string;
+    /**
+     * Dönem kolonlarıyla aynı sırada. Boş hücreler boş bırakılır.
+     */
+    values?:
+      | {
+          value?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+    id?: string | null;
+  }[];
+  notes?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "faqs".
+ */
+export interface Faq {
+  id: number;
+  question: string;
+  answer: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  };
+  order?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "awards".
+ */
+export interface Award {
+  id: number;
+  title: string;
+  issuer?: string | null;
+  year?: number | null;
+  awardedAt?: string | null;
+  description?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  image?: (number | null) | Media;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "contact-messages".
+ */
+export interface ContactMessage {
+  id: number;
+  subjectLine?: string | null;
+  firstName: string;
+  lastName: string;
+  email: string;
+  message: string;
+  consent: boolean;
+  /**
+   * Formun gönderildiği dil.
+   */
+  locale?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "users".
  */
 export interface User {
-  id: string;
+  id: number;
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -143,30 +551,28 @@ export interface User {
   collection: 'users';
 }
 /**
+ * This is a collection of automatically created search results. These results are used by the global site search and will be updated automatically as documents in the CMS are created or updated.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "media".
+ * via the `definition` "search".
  */
-export interface Media {
-  id: string;
-  alt: string;
+export interface Search {
+  id: number;
+  title?: string | null;
+  priority?: number | null;
+  doc: {
+    relationTo: 'pages';
+    value: number | Page;
+  };
   updatedAt: string;
   createdAt: string;
-  url?: string | null;
-  thumbnailURL?: string | null;
-  filename?: string | null;
-  mimeType?: string | null;
-  filesize?: number | null;
-  width?: number | null;
-  height?: number | null;
-  focalX?: number | null;
-  focalY?: number | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
-  id: string;
+  id: number;
   key: string;
   data:
     | {
@@ -183,20 +589,56 @@ export interface PayloadKv {
  * via the `definition` "payload-locked-documents".
  */
 export interface PayloadLockedDocument {
-  id: string;
+  id: number;
   document?:
     | ({
-        relationTo: 'users';
-        value: string | User;
+        relationTo: 'pages';
+        value: number | Page;
+      } | null)
+    | ({
+        relationTo: 'document-archive-items';
+        value: number | DocumentArchiveItem;
+      } | null)
+    | ({
+        relationTo: 'people';
+        value: number | Person;
+      } | null)
+    | ({
+        relationTo: 'commission-years';
+        value: number | CommissionYear;
+      } | null)
+    | ({
+        relationTo: 'faqs';
+        value: number | Faq;
+      } | null)
+    | ({
+        relationTo: 'awards';
+        value: number | Award;
+      } | null)
+    | ({
+        relationTo: 'documents';
+        value: number | Document;
       } | null)
     | ({
         relationTo: 'media';
-        value: string | Media;
+        value: number | Media;
+      } | null)
+    | ({
+        relationTo: 'contact-messages';
+        value: number | ContactMessage;
+      } | null)
+    | ({
+        relationTo: 'users';
+        value: number | User;
+      } | null)
+    | ({
+        relationTo: 'search';
+        value: number | Search;
       } | null);
   globalSlug?: string | null;
   user: {
     relationTo: 'users';
-    value: string | User;
+    value: number | User;
   };
   updatedAt: string;
   createdAt: string;
@@ -206,10 +648,10 @@ export interface PayloadLockedDocument {
  * via the `definition` "payload-preferences".
  */
 export interface PayloadPreference {
-  id: string;
+  id: number;
   user: {
     relationTo: 'users';
-    value: string | User;
+    value: number | User;
   };
   key?: string | null;
   value?:
@@ -229,11 +671,258 @@ export interface PayloadPreference {
  * via the `definition` "payload-migrations".
  */
 export interface PayloadMigration {
-  id: string;
+  id: number;
   name?: string | null;
   batch?: number | null;
   updatedAt: string;
   createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "pages_select".
+ */
+export interface PagesSelect<T extends boolean = true> {
+  title?: T;
+  slug?: T;
+  parent?: T;
+  template?: T;
+  order?: T;
+  archiveCategory?: T;
+  commissionScope?: T;
+  commissionYear?: T;
+  bioGroup?: T;
+  hero?:
+    | T
+    | {
+        headline?: T;
+        subline?: T;
+        ctaLabel?: T;
+        ctaPage?: T;
+        image?: T;
+        badges?:
+          | T
+          | {
+              value?: T;
+              label?: T;
+              id?: T;
+            };
+      };
+  shortcuts?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        page?: T;
+        id?: T;
+      };
+  mosaic?:
+    | T
+    | {
+        title?: T;
+        image?: T;
+        page?: T;
+        id?: T;
+      };
+  content?: T;
+  legacyHtml?: T;
+  attachments?:
+    | T
+    | {
+        label?: T;
+        document?: T;
+        id?: T;
+      };
+  externalUrl?: T;
+  legacyPaths?:
+    | T
+    | {
+        path?: T;
+        id?: T;
+      };
+  translationStatus?: T;
+  meta?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        image?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "document-archive-items_select".
+ */
+export interface DocumentArchiveItemsSelect<T extends boolean = true> {
+  category?: T;
+  language?: T;
+  year?: T;
+  groupLabel?: T;
+  period?: T;
+  label?: T;
+  document?: T;
+  order?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "people_select".
+ */
+export interface PeopleSelect<T extends boolean = true> {
+  name?: T;
+  role?: T;
+  group?: T;
+  bio?: T;
+  photo?: T;
+  order?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "commission-years_select".
+ */
+export interface CommissionYearsSelect<T extends boolean = true> {
+  year?: T;
+  heading?: T;
+  intermediary?: T;
+  periods?:
+    | T
+    | {
+        label?: T;
+        id?: T;
+      };
+  rows?:
+    | T
+    | {
+        metric?: T;
+        values?:
+          | T
+          | {
+              value?: T;
+              id?: T;
+            };
+        id?: T;
+      };
+  notes?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "faqs_select".
+ */
+export interface FaqsSelect<T extends boolean = true> {
+  question?: T;
+  answer?: T;
+  order?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "awards_select".
+ */
+export interface AwardsSelect<T extends boolean = true> {
+  title?: T;
+  issuer?: T;
+  year?: T;
+  awardedAt?: T;
+  description?: T;
+  image?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "documents_select".
+ */
+export interface DocumentsSelect<T extends boolean = true> {
+  title?: T;
+  originalPath?: T;
+  publishedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  url?: T;
+  thumbnailURL?: T;
+  filename?: T;
+  mimeType?: T;
+  filesize?: T;
+  width?: T;
+  height?: T;
+  focalX?: T;
+  focalY?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "media_select".
+ */
+export interface MediaSelect<T extends boolean = true> {
+  alt?: T;
+  originalPath?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  url?: T;
+  thumbnailURL?: T;
+  filename?: T;
+  mimeType?: T;
+  filesize?: T;
+  width?: T;
+  height?: T;
+  focalX?: T;
+  focalY?: T;
+  sizes?:
+    | T
+    | {
+        thumbnail?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+        card?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+        hero?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+      };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "contact-messages_select".
+ */
+export interface ContactMessagesSelect<T extends boolean = true> {
+  subjectLine?: T;
+  firstName?: T;
+  lastName?: T;
+  email?: T;
+  message?: T;
+  consent?: T;
+  locale?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -259,21 +948,14 @@ export interface UsersSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "media_select".
+ * via the `definition` "search_select".
  */
-export interface MediaSelect<T extends boolean = true> {
-  alt?: T;
+export interface SearchSelect<T extends boolean = true> {
+  title?: T;
+  priority?: T;
+  doc?: T;
   updatedAt?: T;
   createdAt?: T;
-  url?: T;
-  thumbnailURL?: T;
-  filename?: T;
-  mimeType?: T;
-  filesize?: T;
-  width?: T;
-  height?: T;
-  focalX?: T;
-  focalY?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -314,6 +996,314 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
   batch?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "navigation".
+ */
+export interface Navigation {
+  id: number;
+  /**
+   * Garanti BBVA kardeş markaları. Aktif olan (bu site) isActive ile işaretlenir.
+   */
+  affiliateBar?:
+    | {
+        label: string;
+        type?: ('page' | 'external') | null;
+        page?: (number | null) | Page;
+        url?: string | null;
+        isActive?: boolean | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Her kalem mega menüde bir kolon grubu açar.
+   */
+  mainMenu?:
+    | {
+        label: string;
+        type?: ('page' | 'external') | null;
+        page?: (number | null) | Page;
+        url?: string | null;
+        columns?:
+          | {
+              heading?: string | null;
+              links?:
+                | {
+                    label: string;
+                    type?: ('page' | 'external') | null;
+                    page?: (number | null) | Page;
+                    url?: string | null;
+                    id?: string | null;
+                  }[]
+                | null;
+              id?: string | null;
+            }[]
+          | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Dil değiştiricinin yanındaki bağlantılar (ör. Bize Ulaşın).
+   */
+  headerUtility?:
+    | {
+        label: string;
+        type?: ('page' | 'external') | null;
+        page?: (number | null) | Page;
+        url?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  headerCta: {
+    label: string;
+    type?: ('page' | 'external') | null;
+    page?: (number | null) | Page;
+    url?: string | null;
+    id?: string | null;
+  };
+  footerColumns?:
+    | {
+        heading?: string | null;
+        links?:
+          | {
+              label: string;
+              type?: ('page' | 'external') | null;
+              page?: (number | null) | Page;
+              url?: string | null;
+              id?: string | null;
+            }[]
+          | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Footer alt satırı: Gizlilik Politikası, KVKK vb.
+   */
+  legalLinks?:
+    | {
+        label: string;
+        type?: ('page' | 'external') | null;
+        page?: (number | null) | Page;
+        url?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  socialLinks?:
+    | {
+        platform: 'linkedin' | 'x' | 'instagram' | 'facebook' | 'youtube';
+        url: string;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "site-settings".
+ */
+export interface SiteSetting {
+  id: number;
+  siteName: string;
+  logo?: (number | null) | Media;
+  defaultSeo?: {
+    title?: string | null;
+    description?: string | null;
+    image?: (number | null) | Media;
+  };
+  analytics?: {
+    /**
+     * Eski sitedeki kullanımdan kaldırılmış ga.js (UA-2561843-12) yerine. Çerez onayı alınmadan yüklenmez.
+     */
+    ga4Id?: string | null;
+  };
+  cookieNotice?: {
+    text?: {
+      root: {
+        type: string;
+        children: {
+          type: any;
+          version: number;
+          [k: string]: unknown;
+        }[];
+        direction: ('ltr' | 'rtl') | null;
+        format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+        indent: number;
+        version: number;
+      };
+      [k: string]: unknown;
+    } | null;
+  };
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "contact-info".
+ */
+export interface ContactInfo {
+  id: number;
+  companyName?: string | null;
+  address?: string | null;
+  phone?: string | null;
+  fax?: string | null;
+  email?: string | null;
+  kepAddress?: string | null;
+  coordinates?: {
+    lat?: number | null;
+    lng?: number | null;
+    zoom?: number | null;
+  };
+  /**
+   * İletişim formu gönderimlerinin iletileceği e-posta adresleri (virgülle ayrılmış).
+   */
+  formRecipients?: string | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "navigation_select".
+ */
+export interface NavigationSelect<T extends boolean = true> {
+  affiliateBar?:
+    | T
+    | {
+        label?: T;
+        type?: T;
+        page?: T;
+        url?: T;
+        isActive?: T;
+        id?: T;
+      };
+  mainMenu?:
+    | T
+    | {
+        label?: T;
+        type?: T;
+        page?: T;
+        url?: T;
+        columns?:
+          | T
+          | {
+              heading?: T;
+              links?:
+                | T
+                | {
+                    label?: T;
+                    type?: T;
+                    page?: T;
+                    url?: T;
+                    id?: T;
+                  };
+              id?: T;
+            };
+        id?: T;
+      };
+  headerUtility?:
+    | T
+    | {
+        label?: T;
+        type?: T;
+        page?: T;
+        url?: T;
+        id?: T;
+      };
+  headerCta?:
+    | T
+    | {
+        label?: T;
+        type?: T;
+        page?: T;
+        url?: T;
+        id?: T;
+      };
+  footerColumns?:
+    | T
+    | {
+        heading?: T;
+        links?:
+          | T
+          | {
+              label?: T;
+              type?: T;
+              page?: T;
+              url?: T;
+              id?: T;
+            };
+        id?: T;
+      };
+  legalLinks?:
+    | T
+    | {
+        label?: T;
+        type?: T;
+        page?: T;
+        url?: T;
+        id?: T;
+      };
+  socialLinks?:
+    | T
+    | {
+        platform?: T;
+        url?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "site-settings_select".
+ */
+export interface SiteSettingsSelect<T extends boolean = true> {
+  siteName?: T;
+  logo?: T;
+  defaultSeo?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        image?: T;
+      };
+  analytics?:
+    | T
+    | {
+        ga4Id?: T;
+      };
+  cookieNotice?:
+    | T
+    | {
+        text?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "contact-info_select".
+ */
+export interface ContactInfoSelect<T extends boolean = true> {
+  companyName?: T;
+  address?: T;
+  phone?: T;
+  fax?: T;
+  email?: T;
+  kepAddress?: T;
+  coordinates?:
+    | T
+    | {
+        lat?: T;
+        lng?: T;
+        zoom?: T;
+      };
+  formRecipients?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

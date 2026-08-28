@@ -41,6 +41,11 @@ next-env.d.ts
 .env
 
 /media
+/documents
+
+# Eski siteden indirilen HTML anlık görüntüsü ve 268 MB'lık PDF arşivi.
+# Kaynaktan yeniden üretilebilir; repoya girmemeli.
+/.migration
 
 # Playwright
 node_modules/
