@@ -53,6 +53,8 @@ const storagePlugins: Plugin[] = process.env.S3_BUCKET
   : []
 
 export default buildConfig({
+  // Railway ilk kurulumunda gerçek SQL hatasını /api yanıtında görmek için.
+  debug: process.env.PAYLOAD_DEBUG === 'true',
   admin: {
     user: Users.slug,
     importMap: {

@@ -82,15 +82,20 @@ function pickHeroVisual(
 }
 
 async function loadHome(locale: Locale) {
-  const payload = await getPayloadClient()
-  const { docs } = await payload.find({
-    collection: 'pages',
-    locale,
-    depth: 3,
-    limit: 1,
-    where: { template: { equals: 'landing' }, _status: { equals: 'published' } },
-  })
-  return docs[0] as Page | undefined
+  try {
+    const payload = await getPayloadClient()
+    const { docs } = await payload.find({
+      collection: 'pages',
+      locale,
+      depth: 3,
+      limit: 1,
+      where: { template: { equals: 'landing' }, _status: { equals: 'published' } },
+    })
+    return docs[0] as Page | undefined
+  } catch (error) {
+    console.error('[home] landing page query failed', error)
+    return undefined
+  }
 }
 
 export async function generateMetadata({
@@ -121,6 +126,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
 
   const [page, payload] = await Promise.all([loadHome(locale), getPayloadClient()])
 
+  const empty = { docs: [] as never[] }
   const [
     { docs: latestDocuments },
     { docs: faqs },
@@ -128,35 +134,58 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
     { docs: reportPages },
     aboutPage,
   ] = await Promise.all([
-    payload.find({
-      collection: 'documents',
-      locale,
-      depth: 0,
-      limit: 6,
-      sort: '-publishedAt',
+    payload
+      .find({
+        collection: 'documents',
+        locale,
+        depth: 0,
+        limit: 6,
+        sort: '-publishedAt',
+      })
+      .catch((error) => {
+        console.error('[home] documents query failed', error)
+        return empty
+      }),
+    payload
+      .find({
+        collection: 'faqs',
+        locale,
+        depth: 0,
+        limit: 3,
+        sort: 'order',
+      })
+      .catch((error) => {
+        console.error('[home] faqs query failed', error)
+        return empty
+      }),
+    payload
+      .find({
+        collection: 'pages',
+        locale,
+        depth: 2,
+        limit: 1,
+        where: { template: { equals: 'faq' }, _status: { equals: 'published' } },
+      })
+      .catch((error) => {
+        console.error('[home] faq pages query failed', error)
+        return empty
+      }),
+    payload
+      .find({
+        collection: 'pages',
+        locale,
+        depth: 3,
+        limit: 1,
+        where: { archiveCategory: { equals: 'faaliyet-raporlari' }, _status: { equals: 'published' } },
+      })
+      .catch((error) => {
+        console.error('[home] report pages query failed', error)
+        return empty
+      }),
+    findPageByPath(locale === 'tr' ? ['kurumsal'] : ['corporate'], locale).catch((error) => {
+      console.error('[home] about page query failed', error)
+      return null
     }),
-    payload.find({
-      collection: 'faqs',
-      locale,
-      depth: 0,
-      limit: 3,
-      sort: 'order',
-    }),
-    payload.find({
-      collection: 'pages',
-      locale,
-      depth: 2,
-      limit: 1,
-      where: { template: { equals: 'faq' }, _status: { equals: 'published' } },
-    }),
-    payload.find({
-      collection: 'pages',
-      locale,
-      depth: 3,
-      limit: 1,
-      where: { archiveCategory: { equals: 'faaliyet-raporlari' }, _status: { equals: 'published' } },
-    }),
-    findPageByPath(locale === 'tr' ? ['kurumsal'] : ['corporate'], locale),
   ])
 
   const documentIds = (latestDocuments as Document[]).map((document) => document.id)
