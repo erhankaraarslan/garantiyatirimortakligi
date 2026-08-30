@@ -1,5 +1,4 @@
 import { unstable_cache } from 'next/cache'
-import { connection } from 'next/server'
 import { getPayload } from 'payload'
 
 import config from '../payload.config'
@@ -7,10 +6,27 @@ import type { ContactInfo, Navigation, Page, SiteSetting } from '../payload-type
 import type { Locale } from './i18n'
 
 export async function getPayloadClient() {
-  // Metal builder Postgres private DNS'i çözemez; prerender'da asılı kalıp
-  // sorguyu istek anına erteler.
-  await connection()
   return getPayload({ config })
+}
+
+function emptyNavigation() {
+  return {
+    id: 0,
+    affiliateBar: [],
+    mainMenu: [],
+    headerUtility: [],
+    headerCta: undefined,
+    footerColumns: [],
+    legalLinks: [],
+  } as unknown as Navigation
+}
+
+function emptySettings() {
+  return { siteName: 'Garanti Yatırım Ortaklığı A.Ş.' } as unknown as SiteSetting
+}
+
+function emptyContact() {
+  return {} as unknown as ContactInfo
 }
 
 /**
@@ -20,30 +36,42 @@ export async function getPayloadClient() {
 export const getNavigation = (locale: Locale) =>
   unstable_cache(
     async () => {
-      const payload = await getPayloadClient()
-      return payload.findGlobal({ slug: 'navigation', locale, depth: 4 }) as Promise<Navigation>
+      try {
+        const payload = await getPayloadClient()
+        return payload.findGlobal({ slug: 'navigation', locale, depth: 4 }) as Promise<Navigation>
+      } catch {
+        return emptyNavigation()
+      }
     },
-    ['navigation', locale, 'v12'],
+    ['navigation', locale, 'v13'],
     { tags: ['navigation'] },
   )()
 
 export const getSiteSettings = (locale: Locale) =>
   unstable_cache(
     async () => {
-      const payload = await getPayloadClient()
-      return payload.findGlobal({ slug: 'site-settings', locale, depth: 1 }) as Promise<SiteSetting>
+      try {
+        const payload = await getPayloadClient()
+        return payload.findGlobal({ slug: 'site-settings', locale, depth: 1 }) as Promise<SiteSetting>
+      } catch {
+        return emptySettings()
+      }
     },
-    ['site-settings', locale, 'v7'],
+    ['site-settings', locale, 'v8'],
     { tags: ['site-settings'] },
   )()
 
 export const getContactInfo = (locale: Locale) =>
   unstable_cache(
     async () => {
-      const payload = await getPayloadClient()
-      return payload.findGlobal({ slug: 'contact-info', locale, depth: 1 }) as Promise<ContactInfo>
+      try {
+        const payload = await getPayloadClient()
+        return payload.findGlobal({ slug: 'contact-info', locale, depth: 1 }) as Promise<ContactInfo>
+      } catch {
+        return emptyContact()
+      }
     },
-    ['contact-info', locale, 'v3'],
+    ['contact-info', locale, 'v4'],
     { tags: ['contact-info'] },
   )()
 

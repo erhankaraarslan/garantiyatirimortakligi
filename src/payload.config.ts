@@ -101,6 +101,9 @@ export default buildConfig({
     pool: {
       connectionString: process.env.DATABASE_URL || '',
     },
+    // Railway gibi boş Postgres'te tabloları ilk açılışta oluştur.
+    // Yerel dump restore sonrası da additive kalır.
+    push: true,
   }),
   sharp,
   plugins: [
