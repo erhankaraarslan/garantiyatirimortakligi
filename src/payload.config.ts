@@ -23,6 +23,7 @@ import { Users } from './collections/Users'
 import { ContactInfo } from './globals/ContactInfo'
 import { Navigation } from './globals/Navigation'
 import { SiteSettings } from './globals/SiteSettings'
+import { migrations } from './migrations'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -103,9 +104,9 @@ export default buildConfig({
     pool: {
       connectionString: process.env.DATABASE_URL || '',
     },
-    // Railway gibi boş Postgres'te tabloları ilk açılışta oluştur.
-    // Yerel dump restore sonrası da additive kalır.
-    push: true,
+    // NODE_ENV=production iken drizzle push yok sayılır; Railway boş DB'de
+    // tablolar ancak bu prod migration ile oluşur.
+    prodMigrations: migrations,
   }),
   sharp,
   plugins: [
