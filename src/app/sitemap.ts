@@ -6,6 +6,8 @@ import type { Page } from '../payload-types'
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'
 
+export const dynamic = 'force-dynamic'
+
 /**
  * sitemap.xml. Eski sitede hiç yoktu (/sitemap.xml 404 dönüyordu).
  * Her sayfa için hreflang alternatifleri de veriliyor.

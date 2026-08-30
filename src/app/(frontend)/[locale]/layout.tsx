@@ -8,7 +8,7 @@ import { Header } from '../../../components/layout/Header'
 import { JsonLd } from '../../../components/layout/JsonLd'
 import { getContactInfo, getSiteSettings } from '../../../lib/data'
 import { sans } from '../../../lib/fonts'
-import { htmlLang, isLocale, locales, type Locale } from '../../../lib/i18n'
+import { htmlLang, isLocale, type Locale } from '../../../lib/i18n'
 import { lexicalPlainText } from '../../../lib/lexical'
 import { mediaSrc } from '../../../lib/media'
 import type { SiteSetting } from '../../../payload-types'
@@ -16,9 +16,7 @@ import '../../../styles/globals.css'
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'
 
-export function generateStaticParams() {
-  return locales.map((locale) => ({ locale }))
-}
+export const dynamic = 'force-dynamic'
 
 export async function generateMetadata({
   params,

@@ -1,4 +1,5 @@
 import { unstable_cache } from 'next/cache'
+import { connection } from 'next/server'
 import { getPayload } from 'payload'
 
 import config from '../payload.config'
@@ -6,6 +7,9 @@ import type { ContactInfo, Navigation, Page, SiteSetting } from '../payload-type
 import type { Locale } from './i18n'
 
 export async function getPayloadClient() {
+  // Metal builder Postgres private DNS'i çözemez; prerender'da asılı kalıp
+  // sorguyu istek anına erteler.
+  await connection()
   return getPayload({ config })
 }
 
