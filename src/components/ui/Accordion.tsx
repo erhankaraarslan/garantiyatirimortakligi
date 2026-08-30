@@ -55,7 +55,7 @@ export function Accordion({
                 onClick={() => toggle(item.id)}
                 className={cn(
                   'flex w-full items-center justify-between gap-4 px-1 py-4 text-left transition-colors',
-                  isOpen ? 'text-brand-blue-dark' : 'text-ink hover:text-brand-blue',
+                  isOpen ? 'text-heading' : 'text-ink hover:text-brand-blue-mid',
                 )}
               >
                 <span className="flex flex-col">

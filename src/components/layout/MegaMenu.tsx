@@ -55,12 +55,8 @@ export function MegaMenu({ items }: { items: MegaMenuItem[] }) {
   }
 
   return (
-    /*
-     * Masaüstü menü xl'den itibaren açılıyor: dört Türkçe menü etiketi
-     * ("Sürekli Bilgilendirme Formu" gibi) 1024px'te tek satıra sığmıyor.
-     */
-    <div ref={containerRef} className="hidden xl:block" onMouseLeave={scheduleClose}>
-      <ul className="flex items-stretch">
+    <div ref={containerRef} className="h-full w-full" onMouseLeave={scheduleClose}>
+      <ul className="flex h-full items-stretch">
         {items.map((item, index) => {
           const hasPanel = item.columns.length > 0
           const isOpen = openIndex === index
@@ -78,10 +74,10 @@ export function MegaMenu({ items }: { items: MegaMenuItem[] }) {
                 }}
                 onFocus={() => setOpenIndex(hasPanel ? index : null)}
                 className={cn(
-                  'flex items-center whitespace-nowrap px-3.5 text-nav font-medium uppercase tracking-wide transition-colors',
+                  'flex h-full items-center whitespace-nowrap px-4 text-[15px] font-medium transition-colors',
                   isCurrent || isOpen
-                    ? 'text-brand-blue shadow-[inset_0_-3px_0_0_var(--color-brand-blue)]'
-                    : 'text-ink hover:text-brand-blue',
+                    ? 'text-brand-blue-mid shadow-[inset_0_-3px_0_0_var(--color-brand-navy)]'
+                    : 'text-brand-blue-mid hover:text-brand-navy',
                 )}
               >
                 {item.label}
@@ -90,13 +86,13 @@ export function MegaMenu({ items }: { items: MegaMenuItem[] }) {
               {hasPanel && isOpen && (
                 <div
                   onMouseEnter={cancelClose}
-                  className="absolute left-0 right-0 top-full z-40 border-t border-bar-border bg-surface shadow-[0_1px_1px_rgba(0,0,0,0.2)]"
+                  className="absolute left-0 right-0 top-full z-40 border-t border-bar-border bg-surface-alt shadow-[0_8px_24px_rgba(18,18,18,0.08)]"
                 >
                   <div className="container-page grid gap-8 py-8 md:grid-cols-3">
                     {item.columns.map((column, columnIndex) => (
                       <div key={column.heading ?? columnIndex}>
                         {column.heading && (
-                          <p className="mb-3 text-nav font-bold uppercase tracking-wide text-brand-blue-dark">
+                          <p className="mb-3 text-nav font-medium text-heading">
                             {column.heading}
                           </p>
                         )}
@@ -105,7 +101,7 @@ export function MegaMenu({ items }: { items: MegaMenuItem[] }) {
                             <li key={link.href}>
                               <Link
                                 href={link.href}
-                                className="text-body hover:text-brand-blue hover:underline"
+                                className="text-[16px] text-brand-blue hover:underline"
                               >
                                 {link.label}
                               </Link>

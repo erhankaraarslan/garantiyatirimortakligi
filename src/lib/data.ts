@@ -19,7 +19,7 @@ export const getNavigation = (locale: Locale) =>
       const payload = await getPayloadClient()
       return payload.findGlobal({ slug: 'navigation', locale, depth: 4 }) as Promise<Navigation>
     },
-    ['navigation', locale, 'v4'],
+    ['navigation', locale, 'v10'],
     { tags: ['navigation'] },
   )()
 
@@ -29,7 +29,7 @@ export const getSiteSettings = (locale: Locale) =>
       const payload = await getPayloadClient()
       return payload.findGlobal({ slug: 'site-settings', locale, depth: 1 }) as Promise<SiteSetting>
     },
-    ['site-settings', locale, 'v3'],
+    ['site-settings', locale, 'v7'],
     { tags: ['site-settings'] },
   )()
 
@@ -39,7 +39,7 @@ export const getContactInfo = (locale: Locale) =>
       const payload = await getPayloadClient()
       return payload.findGlobal({ slug: 'contact-info', locale, depth: 1 }) as Promise<ContactInfo>
     },
-    ['contact-info', locale, 'v2'],
+    ['contact-info', locale, 'v3'],
     { tags: ['contact-info'] },
   )()
 

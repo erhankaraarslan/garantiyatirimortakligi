@@ -8,7 +8,7 @@ import { AffiliateBar } from './AffiliateBar'
 import { LanguageSwitcher } from './LanguageSwitcher'
 import { MegaMenu, type MegaMenuItem } from './MegaMenu'
 import { MobileMenu } from './MobileMenu'
-import { resolveLink } from './resolveLink'
+import { isExternal, resolveLink, withKapLocale } from './resolveLink'
 
 const strings = {
   tr: {
@@ -17,6 +17,8 @@ const strings = {
     open: 'Menüyü aç',
     close: 'Menüyü kapat',
     menu: 'Ana menü',
+    search: 'Arama',
+    searchHref: '/tr/arama',
   },
   en: {
     skip: 'Skip to content',
@@ -24,6 +26,8 @@ const strings = {
     open: 'Open menu',
     close: 'Close menu',
     menu: 'Main menu',
+    search: 'Search',
+    searchHref: '/en/search',
   },
 } satisfies Record<Locale, Record<string, string>>
 
@@ -58,10 +62,16 @@ export async function Header({ locale }: { locale: Locale }) {
   }))
 
   const cta = nav.headerCta?.label
-    ? { label: nav.headerCta.label, href: resolveLink(nav.headerCta, locale) }
+    ? {
+        label: nav.headerCta.label,
+        href: withKapLocale(resolveLink(nav.headerCta, locale), locale),
+        external: nav.headerCta.type === 'external',
+      }
     : null
 
   const logo = typeof settings.logo === 'object' ? settings.logo : null
+  const kapClass =
+    'hidden h-10 shrink-0 items-center justify-center rounded-btn border border-brand-navy bg-surface px-3 text-[15px] font-medium text-brand-navy transition-colors hover:bg-surface-alt sm:inline-flex'
 
   return (
     <>
@@ -76,45 +86,36 @@ export async function Header({ locale }: { locale: Locale }) {
         <AffiliateBar items={nav.affiliateBar ?? []} locale={locale} />
 
         <header className="relative border-b border-bar-border bg-surface">
-          <div className="container-page flex h-[--header-height] items-stretch justify-between gap-4">
-            <div className="flex min-w-0 items-stretch gap-6">
-              <Link
-                href={`/${locale}`}
-                aria-label={t.home}
-                className="flex shrink-0 items-center py-3"
-              >
-                {logo?.url ? (
-                  <Image
-                    src={logo.url}
-                    alt={logo.alt ?? settings.siteName ?? ''}
-                    width={logo.width ?? 200}
-                    height={logo.height ?? 44}
-                    priority
-                    className="h-auto w-[168px] object-contain"
-                  />
-                ) : (
-                  /*
-                   * Logo görseli yüklenene kadar metin lockup. Tek satırda menüyü
-                   * sıkıştırdığı için iki satıra bölüyoruz.
-                   */
-                  <span className="flex flex-col leading-tight">
-                    <span className="text-base font-bold tracking-tight text-brand-blue-dark">
-                      Garanti Yatırım
-                    </span>
-                    <span className="text-xs font-medium uppercase tracking-widest text-brand-blue">
-                      Ortaklığı A.Ş.
-                    </span>
+          <div className="container-page flex h-[var(--header-logo-row)] items-center gap-6 lg:gap-8">
+            <Link href={`/${locale}`} aria-label={t.home} className="flex shrink-0 items-center">
+              {logo?.url ? (
+                <Image
+                  src={logo.url}
+                  alt={logo.alt ?? settings.siteName ?? ''}
+                  width={logo.width ?? 240}
+                  height={logo.height ?? 88}
+                  priority
+                  unoptimized
+                  className="h-[var(--header-logo-size)] w-auto object-contain object-left"
+                />
+              ) : (
+                <span className="flex flex-col leading-tight">
+                  <span className="text-[22px] font-bold tracking-tight text-heading">
+                    Garanti Yatırım
                   </span>
-                )}
-              </Link>
+                  <span className="text-[11px] font-medium uppercase tracking-[0.18em] text-brand-blue-mid">
+                    Ortaklığı A.Ş.
+                  </span>
+                </span>
+              )}
+            </Link>
 
-              <nav aria-label={t.menu} className="flex items-stretch">
-                <MegaMenu items={menuItems} />
-              </nav>
-            </div>
+            <nav aria-label={t.menu} className="hidden h-full min-w-0 flex-1 lg:flex lg:items-stretch">
+              <MegaMenu items={menuItems} />
+            </nav>
 
-            <div className="flex items-center gap-4">
-              <div className="hidden items-center gap-4 md:flex">
+            <div className="ml-auto flex shrink-0 items-center gap-4 lg:gap-5">
+              <div className="hidden items-center gap-5 lg:flex">
                 <LanguageSwitcher
                   targetLocale={targetLocale}
                   href={alternate.href}
@@ -124,26 +125,47 @@ export async function Header({ locale }: { locale: Locale }) {
                   <Link
                     key={link.href}
                     href={link.href}
-                    className="whitespace-nowrap text-nav font-medium text-brand-blue hover:underline"
+                    className="inline-flex h-10 items-center whitespace-nowrap text-[15px] font-medium text-brand-blue-mid hover:underline"
                   >
                     {link.label}
                   </Link>
                 ))}
               </div>
 
-              {cta && (
-                <Link
-                  href={cta.href}
-                  className="hidden items-center whitespace-nowrap bg-brand-blue px-5 text-nav font-medium text-white transition-colors hover:bg-brand-blue-mid sm:flex"
-                >
-                  {cta.label}
-                </Link>
-              )}
+              <span aria-hidden="true" className="hidden h-5 w-px bg-divider lg:block" />
+
+              <Link
+                href={t.searchHref}
+                aria-label={t.search}
+                className="flex h-10 w-10 items-center justify-center text-brand-blue-mid hover:text-brand-navy"
+              >
+                <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5" fill="none">
+                  <circle cx="11" cy="11" r="6.25" stroke="currentColor" strokeWidth="1.75" />
+                  <path d="m16 16 4 4" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
+                </svg>
+              </Link>
+
+              {cta &&
+                (cta.external || isExternal(cta.href) ? (
+                  <a
+                    href={cta.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={kapClass}
+                  >
+                    {cta.label}
+                  </a>
+                ) : (
+                  <Link href={cta.href} className={kapClass}>
+                    {cta.label}
+                  </Link>
+                ))}
 
               <MobileMenu
                 items={menuItems}
                 utilityLinks={[
                   ...utilityLinks,
+                  ...(cta ? [{ label: cta.label, href: cta.href }] : []),
                   { label: targetLocale.toUpperCase(), href: alternate.href },
                 ]}
                 labels={{ open: t.open, close: t.close, menu: t.menu }}

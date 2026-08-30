@@ -11,6 +11,7 @@ import { FaqList } from '../../../../components/templates/FaqList'
 import { SectionIndex } from '../../../../components/templates/SectionIndex'
 import { SitemapTree } from '../../../../components/templates/SitemapTree'
 import { Breadcrumb, type Crumb } from '../../../../components/ui/Breadcrumb'
+import { buttonVariants } from '../../../../components/ui/Button'
 import { DocumentLink } from '../../../../components/ui/DocumentLink'
 import { HtmlContent } from '../../../../components/ui/HtmlContent'
 import { PageHero } from '../../../../components/ui/PageHero'
@@ -310,7 +311,7 @@ async function MissingTranslationNotice({ locale, pageId }: { locale: Locale; pa
   const href = source?.slug ? pageHref(source, otherLocale) : `/${otherLocale}`
 
   return (
-    <div className="border-l-4 border-brand-blue-light bg-surface-alt p-6">
+    <div className="border-l-4 border-teal bg-surface-alt p-6">
       <p className="text-h3 font-medium text-ink">
         {locale === 'en' ? 'Not available in English yet' : 'Bu sayfa Türkçe olarak hazırlanıyor'}
       </p>
@@ -319,10 +320,7 @@ async function MissingTranslationNotice({ locale, pageId }: { locale: Locale; pa
           ? 'This page has not been translated yet. You can view the Turkish version in the meantime.'
           : 'Bu sayfanın Türkçe çevirisi henüz tamamlanmadı. Bu süre zarfında İngilizce sürümünü görüntüleyebilirsiniz.'}
       </p>
-      <Link
-        href={href}
-        className="mt-4 inline-flex bg-brand-blue px-5 py-3 text-nav font-medium text-white transition-colors hover:bg-brand-blue-mid"
-      >
+      <Link href={href} className={`${buttonVariants.primary} mt-4`}>
         {locale === 'en' ? 'View Turkish version' : 'İngilizce sürümü görüntüle'}
       </Link>
     </div>

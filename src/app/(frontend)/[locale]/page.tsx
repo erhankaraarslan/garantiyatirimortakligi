@@ -3,30 +3,54 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
-import { DocumentLink } from '../../../components/ui/DocumentLink'
 import { HomeMosaic, type MosaicTile } from '../../../components/ui/HomeMosaic'
 import { RichText } from '../../../components/ui/RichText'
+import { buttonVariants } from '../../../components/ui/Button'
 import { getPayloadClient, pageHref } from '../../../lib/data'
+import { mediaSrc } from '../../../lib/media'
+import { formatBytes } from '../../../lib/utils'
 import { isLocale, type Locale } from '../../../lib/i18n'
-import type { Faq, Page } from '../../../payload-types'
+import type { Document, Faq, Page } from '../../../payload-types'
 
 const strings = {
   tr: {
     shortcuts: 'Hızlı Erişim',
-    latest: 'Son Yayımlanan Dokümanlar',
-    latestAll: 'Tüm finansal raporlara git',
+    latest: 'Son yayımlanan dokümanlar',
+    latestAll: 'Tümünü gör',
     about: 'Kurumsal',
-    faq: 'Sıkça Sorulan Sorular',
-    faqAll: 'Tüm sorulara git',
+    faq: 'Sıkça sorulan sorular',
+    faqAll: 'Tümünü gör',
+    discover: 'Keşfet',
+    inspect: 'Detaylı Bilgi',
+    openPdf: 'PDF’i aç',
   },
   en: {
-    shortcuts: 'Quick Access',
-    latest: 'Recently Published Documents',
-    latestAll: 'Go to all financial reports',
+    shortcuts: 'Quick access',
+    latest: 'Recently published documents',
+    latestAll: 'See all',
     about: 'Corporate',
-    faq: 'Frequently Asked Questions',
-    faqAll: 'See all questions',
+    faq: 'Frequently asked questions',
+    faqAll: 'See all',
+    discover: 'Explore',
+    inspect: 'Learn more',
+    openPdf: 'Open PDF',
   },
+}
+
+function pickBleedVisual(
+  images: Array<{ url?: string | null; width?: number | null; height?: number | null } | null | undefined>,
+) {
+  const usable = images.filter((image): image is NonNullable<(typeof images)[number]> & { url: string } =>
+    Boolean(image?.url),
+  )
+  if (usable.length === 0) return null
+  const landscape = usable.filter((image) => (image.width ?? 1) >= (image.height ?? 1))
+  const pool = landscape.length > 0 ? landscape : usable
+  return [...pool].sort((a, b) => {
+    const ratioA = (a.width ?? 1) / Math.max(a.height ?? 1, 1)
+    const ratioB = (b.width ?? 1) / Math.max(b.height ?? 1, 1)
+    return ratioB - ratioA
+  })[0]
 }
 
 async function loadHome(locale: Locale) {
@@ -108,93 +132,110 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
       },
     ]
   })
-  const showMosaic = mosaicTiles.length > 0
+  const visual = pickBleedVisual([heroImage, ...mosaicTiles.map((tile) => tile.image)])
+  const visualAlt = visual && 'alt' in visual ? (visual.alt ?? '') : ''
 
   return (
     <>
-      {/* Hero metni + altta eski sitenin tam genişlik fotoğraf mozaiği */}
-      <section className="bg-surface-alt">
-        <div className="container-page py-12 lg:py-16">
-          <div className="max-w-3xl">
-            <h1 className="text-h2 text-brand-blue-dark md:text-h1">
+      <section className="relative bg-hero">
+        <div className="pointer-events-none absolute inset-y-0 right-0 hidden overflow-hidden bg-navy lg:block lg:w-1/2">
+          {mediaSrc(visual, 'hero') ? (
+            <Image
+              src={mediaSrc(visual, 'hero')!}
+              alt=""
+              fill
+              priority
+              quality={90}
+              sizes="50vw"
+              className="object-cover object-center"
+            />
+          ) : null}
+          <div
+            aria-hidden="true"
+            className="absolute inset-y-0 left-0 w-32 bg-gradient-to-r from-hero to-transparent"
+          />
+        </div>
+
+        <div className="container-page relative">
+          <div className="flex flex-col justify-center py-14 lg:min-h-[560px] lg:max-w-[642px] lg:py-16 lg:pr-10">
+            <h1 className="text-h1 text-heading">
               {hero?.headline ?? page?.title ?? 'Garanti Yatırım Ortaklığı A.Ş.'}
             </h1>
             {hero?.subline && (
-              <p className="mt-5 max-w-xl text-lg leading-relaxed text-body">{hero.subline}</p>
+              <p className="mt-5 max-w-[34rem] text-[18px] font-medium leading-7 text-heading">
+                {hero.subline}
+              </p>
             )}
             {hero?.ctaLabel && ctaPage && (
-              <Link
-                href={pageHref(ctaPage, locale)}
-                className="mt-7 inline-flex bg-brand-blue px-7 py-3.5 text-btn font-medium text-white transition-colors hover:bg-brand-blue-mid"
-              >
+              <Link href={pageHref(ctaPage, locale)} className={`${buttonVariants.accent} mt-8 w-fit`}>
                 {hero.ctaLabel}
               </Link>
             )}
             {(hero?.badges ?? []).length > 0 && (
-              <ul className="mt-8 flex flex-wrap gap-4">
+              <ul className="mt-12 flex flex-wrap gap-x-12 gap-y-6">
                 {(hero?.badges ?? []).map((badge, index) => (
-                  <li
-                    key={badge.id ?? index}
-                    className="flex h-24 w-24 flex-col items-center justify-center rounded-full bg-brand-blue-light/20 p-2 text-center"
-                  >
-                    <span className="text-lg font-bold text-brand-blue-dark">{badge.value}</span>
-                    <span className="mt-0.5 text-[11px] leading-tight text-brand-blue-dark">
-                      {badge.label}
-                    </span>
+                  <li key={badge.id ?? index} className="border-l-[3px] border-teal pl-4">
+                    <p className="text-[28px] font-bold leading-none tracking-tight text-heading">
+                      {badge.value}
+                    </p>
+                    <p className="mt-1.5 text-[13px] leading-5 text-muted">{badge.label}</p>
                   </li>
                 ))}
               </ul>
             )}
           </div>
+        </div>
 
-          {showMosaic ? (
-            <div className="mt-10">
-              <HomeMosaic tiles={mosaicTiles} />
-            </div>
+        <div className="relative aspect-[16/10] w-full lg:hidden">
+          {mediaSrc(visual, 'hero') ? (
+            <Image
+              src={mediaSrc(visual, 'hero')!}
+              alt={visualAlt}
+              fill
+              priority
+              quality={90}
+              sizes="100vw"
+              className="object-cover"
+            />
           ) : (
-            heroImage?.url && (
-              <div className="relative mt-10">
-                <Image
-                  src={heroImage.url}
-                  alt={heroImage.alt ?? ''}
-                  width={heroImage.width ?? 640}
-                  height={heroImage.height ?? 480}
-                  priority
-                  className="w-full object-cover"
-                />
-              </div>
-            )
+            <div className="absolute inset-0 bg-navy" />
           )}
         </div>
       </section>
 
-      {/* Kısayol kartları: 3 kolonlu grid deseni */}
-      {(page?.shortcuts ?? []).length > 0 && (
+      {mosaicTiles.length > 0 && (
         <section className="bg-surface">
-          <div className="container-page py-14 lg:py-20">
-            <h2 className="text-h2 text-ink">{t.shortcuts}</h2>
-            <ul className="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+          <div className="container-page py-16 lg:py-[72px]">
+            <h2 className="mb-10 text-h2 text-ink">{t.discover}</h2>
+            <HomeMosaic tiles={mosaicTiles} actionLabel={t.inspect} />
+          </div>
+        </section>
+      )}
+
+      {(page?.shortcuts ?? []).length > 0 && (
+        <section className="bg-surface-alt">
+          <div className="container-page py-16 lg:py-[72px]">
+            <h2 className="mb-10 text-h2 text-ink">{t.shortcuts}</h2>
+            <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
               {(page?.shortcuts ?? []).map((shortcut, index) => {
                 const target = typeof shortcut.page === 'object' ? shortcut.page : null
                 if (!target) return null
-
                 return (
                   <li key={shortcut.id ?? index}>
                     <Link
                       href={pageHref(target, locale)}
-                      className="group flex h-full flex-col border border-divider bg-surface p-6 transition-colors hover:border-brand-blue"
+                      className="group flex h-full flex-col bg-surface px-6 py-7 transition-shadow duration-300 hover:shadow-[0_8px_24px_rgba(6,33,70,0.08)]"
                     >
-                      <span className="text-h3 font-medium text-brand-blue-dark group-hover:text-brand-blue">
+                      <span className="h-[3px] w-10 bg-teal" />
+                      <span className="mt-5 text-[18px] font-medium tracking-[-0.4px] text-heading">
                         {shortcut.title}
                       </span>
                       {shortcut.description && (
-                        <span className="mt-2 text-sm text-body">{shortcut.description}</span>
+                        <span className="mt-2 text-sm leading-6 text-body">{shortcut.description}</span>
                       )}
-                      <span
-                        aria-hidden="true"
-                        className="mt-4 text-brand-blue transition-transform group-hover:translate-x-1"
-                      >
-                        &rarr;
+                      <span className="mt-6 inline-flex items-center gap-1.5 text-[15px] font-medium text-teal">
+                        {t.inspect}
+                        <ArrowIcon />
                       </span>
                     </Link>
                   </li>
@@ -205,28 +246,45 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
         </section>
       )}
 
-      {/* Son yayımlanan dokümanlar: referanstaki duyuru kartı deseni */}
       {latestDocuments.length > 0 && (
-        <section className="bg-surface-alt">
-          <div className="container-page py-14 lg:py-20">
-            <h2 className="text-h2 text-ink">{t.latest}</h2>
-            <ul className="mt-8 grid gap-x-8 md:grid-cols-2 lg:grid-cols-3">
-              {latestDocuments.map((document) => (
-                <li key={document.id} className="bg-surface p-5">
-                  {document.publishedAt && (
-                    <p className="mb-1 text-xs text-muted" suppressHydrationWarning>
-                      {new Date(document.publishedAt).toLocaleDateString(
-                        locale === 'tr' ? 'tr-TR' : 'en-GB',
-                        {
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric',
-                          timeZone: 'Europe/Istanbul',
-                        },
-                      )}
+        <section className="bg-surface">
+          <div className="container-page py-16 lg:py-[72px]">
+            <SectionHeading
+              title={t.latest}
+              href={ctaPage ? pageHref(ctaPage, locale) : undefined}
+              action={t.latestAll}
+            />
+            <ul className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+              {(latestDocuments as Document[]).map((document) => (
+                <li key={document.id}>
+                  <a
+                    href={document.url ?? '#'}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group flex h-full min-h-[188px] flex-col border-t-[3px] border-teal bg-surface-alt px-6 py-6 transition-shadow duration-300 hover:shadow-[0_8px_24px_rgba(6,33,70,0.08)]"
+                  >
+                    {document.publishedAt && (
+                      <p className="text-[13px] text-muted" suppressHydrationWarning>
+                        {new Date(document.publishedAt).toLocaleDateString(
+                          locale === 'tr' ? 'tr-TR' : 'en-GB',
+                          {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric',
+                            timeZone: 'Europe/Istanbul',
+                          },
+                        )}
+                      </p>
+                    )}
+                    <p className="mt-3 text-[18px] font-medium leading-snug tracking-[-0.4px] text-heading group-hover:text-brand-navy">
+                      {document.title || document.filename}
                     </p>
-                  )}
-                  <DocumentLink document={document} locale={locale} />
+                    <p className="mt-auto inline-flex items-center gap-1.5 pt-6 text-[15px] font-medium text-teal">
+                      {t.openPdf}
+                      {document.filesize ? ` · ${formatBytes(document.filesize)}` : ''}
+                      <ArrowIcon />
+                    </p>
+                  </a>
                 </li>
               ))}
             </ul>
@@ -234,42 +292,77 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
         </section>
       )}
 
-      {/* Kurumsal özet */}
       {page?.content && (
-        <section className="bg-surface">
-          <div className="container-page py-14 lg:py-20">
+        <section className="bg-surface-alt">
+          <div className="container-page py-16 lg:py-[72px]">
             <h2 className="text-h2 text-ink">{t.about}</h2>
-            <RichText data={page.content} className="mt-6 max-w-3xl" />
+            <RichText data={page.content} className="mt-8 max-w-3xl" />
           </div>
         </section>
       )}
 
-      {/* SSS özeti: referanstaki accordion + "tüm sorulara git" deseni */}
       {faqs.length > 0 && (
-        <section className="bg-surface-alt">
-          <div className="container-page py-14 lg:py-20">
-            <h2 className="text-h2 text-ink">{t.faq}</h2>
-            <dl className="mt-8 divide-y divide-divider border-y border-divider">
+        <section className="bg-surface">
+          <div className="container-page py-16 lg:py-[72px]">
+            <SectionHeading
+              title={t.faq}
+              href={faqPages[0] ? pageHref(faqPages[0], locale) : undefined}
+              action={t.faqAll}
+            />
+            <dl className="divide-y divide-divider border-y border-divider">
               {(faqs as Faq[]).map((faq) => (
-                <div key={faq.id} className="py-5">
-                  <dt className="text-h3 font-medium text-ink">{faq.question}</dt>
-                  <dd className="mt-2 line-clamp-3 text-sm text-body">
+                <div key={faq.id} className="py-6">
+                  <dt className="text-[18px] font-medium tracking-[-0.4px] text-heading">{faq.question}</dt>
+                  <dd className="mt-2 line-clamp-3 max-w-3xl text-[15px] leading-6 text-body">
                     <RichText data={faq.answer} />
                   </dd>
                 </div>
               ))}
             </dl>
-            {faqPages[0] && (
-              <Link
-                href={pageHref(faqPages[0], locale)}
-                className="mt-6 inline-flex text-nav font-medium text-brand-blue hover:underline"
-              >
-                {t.faqAll} →
-              </Link>
-            )}
           </div>
         </section>
       )}
+
     </>
+  )
+}
+
+function SectionHeading({
+  title,
+  href,
+  action,
+}: {
+  title: string
+  href?: string
+  action?: string
+}) {
+  return (
+    <div className="mb-10 flex items-end justify-between gap-4">
+      <h2 className="text-h2 text-ink">{title}</h2>
+      {href && action && (
+        <Link
+          href={href}
+          className="mb-1 hidden shrink-0 items-center gap-1.5 text-[15px] font-medium text-teal hover:underline sm:inline-flex"
+        >
+          {action}
+          <ArrowIcon />
+        </Link>
+      )}
+    </div>
+  )
+}
+
+function ArrowIcon() {
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 16 16"
+      className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.75"
+    >
+      <path d="M5.5 3.5 11 8l-5.5 4.5" />
+    </svg>
   )
 }

@@ -1,6 +1,7 @@
 import { headers } from 'next/headers'
 import Link from 'next/link'
 
+import { buttonVariants } from '../../../components/ui/Button'
 import { isLocale, type Locale } from '../../../lib/i18n'
 
 const copy = {
@@ -28,20 +29,14 @@ export default async function NotFound() {
 
   return (
     <div className="container-page flex min-h-[50vh] flex-col items-center justify-center py-20 text-center">
-      <p className="text-h1 font-bold text-brand-blue-light">404</p>
+      <p className="text-h1 text-heading">404</p>
       <h1 className="mt-2 text-h2 text-ink">{t.title}</h1>
       <p className="mt-3 max-w-lg text-body">{t.body}</p>
       <div className="mt-8 flex flex-wrap justify-center gap-3">
-        <Link
-          href={`/${locale}`}
-          className="bg-brand-blue px-6 py-3 text-nav font-medium text-white transition-colors hover:bg-brand-blue-mid"
-        >
+        <Link href={`/${locale}`} className={buttonVariants.primary}>
           {t.home}
         </Link>
-        <Link
-          href={t.otherHref}
-          className="border border-brand-blue px-6 py-3 text-nav font-medium text-brand-blue transition-colors hover:bg-surface-alt"
-        >
+        <Link href={t.otherHref} className={buttonVariants.secondary}>
           {t.other}
         </Link>
       </div>

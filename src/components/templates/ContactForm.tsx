@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 
+import { buttonVariants } from '../ui/Button'
 import type { Locale } from '../../lib/i18n'
 
 const strings = {
@@ -102,7 +103,7 @@ export function ContactForm({ locale }: { locale: Locale }) {
           rows={6}
           aria-invalid={Boolean(errors.message)}
           aria-describedby={errors.message ? 'message-error' : undefined}
-          className="w-full border border-divider bg-surface px-3 py-2.5 outline-none focus:border-brand-blue"
+          className={errors.message ? 'field is-invalid' : 'field'}
         />
         {errors.message && (
           <p id="message-error" className="mt-1 text-xs text-[#c0392b]">
@@ -139,7 +140,7 @@ export function ContactForm({ locale }: { locale: Locale }) {
       <button
         type="submit"
         disabled={status === 'sending'}
-        className="mt-6 bg-brand-blue px-7 py-3.5 text-btn font-medium text-white transition-colors hover:bg-brand-blue-mid disabled:opacity-60"
+        className={`${buttonVariants.primary} mt-6`}
       >
         {status === 'sending' ? t.sending : t.submit}
       </button>
@@ -171,7 +172,7 @@ function Field({
         type={type}
         aria-invalid={Boolean(error)}
         aria-describedby={error ? `${id}-error` : undefined}
-        className="w-full border border-divider bg-surface px-3 py-2.5 outline-none focus:border-brand-blue"
+        className={error ? 'field is-invalid' : 'field'}
       />
       {error && (
         <p id={`${id}-error`} className="mt-1 text-xs text-[#c0392b]">

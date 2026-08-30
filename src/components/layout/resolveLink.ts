@@ -35,3 +35,9 @@ export function resolveLink(link: NavLink | null | undefined, locale: Locale): s
 export function isExternal(href: string): boolean {
   return /^https?:\/\//.test(href)
 }
+
+/** KAP şirket özetinde dil öneki /tr veya /en. */
+export function withKapLocale(href: string, locale: Locale): string {
+  if (!href.includes('kap.org.tr/')) return href
+  return href.replace(/kap\.org\.tr\/(tr|en)(?=\/)/, `kap.org.tr/${locale}`)
+}

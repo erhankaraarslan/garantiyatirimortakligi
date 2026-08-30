@@ -15,7 +15,7 @@ export function SitemapTree({ sections, locale }: { sections: SectionNavItem[]; 
           <li key={section.href}>
             <Link
               href={section.href}
-              className="text-h3 font-medium text-brand-blue-dark hover:underline"
+              className="text-h3 font-medium text-heading hover:underline"
             >
               {section.label}
             </Link>

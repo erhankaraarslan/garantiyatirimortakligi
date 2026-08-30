@@ -1,71 +1,86 @@
 /*
- * Garanti BBVA tasarım dili tokenları.
- * Değerler garantibbvakripto.com.tr'den tarayıcı üzerinden ölçülerek alındı;
- * kaynak ekran görüntüleri docs/design-reference/ altında.
+ * Garanti BBVA tasarım dili — değerler 2026-08'de www.garantibbva.com.tr
+ * üzerinden ölçülmüştür (.button.primary, .banner__title, .mainfooter).
  *
- * @theme içindeki tokenlar Tailwind utility'lerine dönüşür:
- *   --color-brand-blue  -> bg-brand-blue / text-brand-blue / border-brand-blue
- *   --container-page    -> max-w-page
- *   --text-h1           -> text-h1
+ * Tailwind v4 + Turbopack: @layer içine @media+:root, @utility veya
+ * nitelik seçicisi koymayın — CssSyntaxError ("Missing opening {") üretir.
  */
 
 @theme {
-  /* --- Marka renkleri --- */
-  --color-brand-blue: #1464a5; /* birincil buton, marka mavisi */
-  --color-brand-blue-dark: #0050a5; /* H1 başlıklar */
-  --color-brand-blue-mid: #225a8f; /* hover */
-  --color-brand-blue-light: #49a5e6; /* ikon, vurgu */
-  --color-navy: #062047; /* iç sayfa hero, footer */
-  --color-teal: #028484; /* ikincil CTA, aktif sekme */
+  --color-brand-navy: #004481;
+  --color-brand-navy-mid: #003a70;
+  --color-heading: #014581;
+  --color-brand-blue: #1464a5;
+  --color-brand-blue-dark: #014581;
+  --color-brand-blue-mid: #225a8f;
+  --color-brand-blue-light: #1973b8;
+  --color-navy: #062146;
+  --color-teal: #02a5a5;
+  --color-teal-dark: #018f8f;
   --color-teal-light: #2dcccd;
-  --color-green: #009242; /* aktif durum, başarı */
+  --color-green: #009242;
+  --color-hero: #d4e0ed;
 
-  /* --- Nötrler --- */
-  --color-ink: #1d212f; /* koyu metin */
-  --color-body: #6d7278; /* gövde metni */
-  --color-muted: #666666; /* ikincil metin */
-  --color-surface: #ffffff; /* kart */
-  --color-surface-alt: #f7f8f9; /* bölüm arkaplanı */
-  --color-surface-body: #f4f4f4; /* sayfa arkaplanı */
-  --color-surface-inactive: #efefef; /* pasif buton */
-  --color-bar: #ebeff8; /* üst marka barı */
+  --color-ink: #121212;
+  --color-body: #3c3c3c;
+  --color-muted: #666666;
+  --color-surface: #ffffff;
+  --color-surface-alt: #f4f4f4;
+  --color-surface-body: #ffffff;
+  --color-surface-inactive: #efefef;
+  --color-bar: #ebeff8;
   --color-bar-border: #dde3ed;
   --color-divider: #c9d1de;
+  --color-control: #e1e1e1;
 
-  /* --- Tipografi --- */
-  --font-sans: var(--font-public-sans), -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-sans: var(--font-public-sans), ui-sans-serif, system-ui, sans-serif;
 
-  --text-h1: 3rem; /* 48px */
-  --text-h1--line-height: 1.1;
+  --text-h1: 3rem;
+  --text-h1--line-height: 1.167;
+  --text-h1--letter-spacing: -0.5px;
   --text-h1--font-weight: 700;
-  --text-h2: 2.25rem; /* 36px */
-  --text-h2--line-height: 1.2;
-  --text-h2--font-weight: 300; /* referansta H2 light ağırlıkta */
-  --text-h3: 1.125rem; /* 18px - referansta 15px, kart başlıkları için yükselttik */
+  --text-h2: 2.25rem;
+  --text-h2--line-height: 1.333;
+  --text-h2--font-weight: 300;
+  --text-h3: 1.125rem;
   --text-h3--line-height: 1.5;
+  --text-h3--letter-spacing: -0.4px;
   --text-h3--font-weight: 500;
-  /* Tailwind'in varsayılan `text-base` adını kullanıyoruz: --color-body ile
-     çakışmaması için (ikisi de `text-body` utility'sini üretirdi). */
-  --text-base: 0.9375rem; /* 15px gövde */
-  --text-base--line-height: 1.6;
-  --text-btn: 1.0625rem; /* 17px buton */
-  --text-nav: 0.875rem; /* 14px nav link */
+  --text-base: 1rem;
+  --text-base--line-height: 1.5;
+  --text-btn: 0.9375rem;
+  --text-nav: 0.9375rem;
 
-  /* --- Layout --- */
-  --container-page: 1200px;
-  --container-bar: 1240px;
-  --container-prose: 760px;
+  --radius-btn: 1px;
+
+  --max-width-page: 80rem;
+  --max-width-bar: 80rem;
+  --max-width-prose: 47.5rem;
+}
+
+@utility container-page {
+  margin-inline: auto;
+  width: 100%;
+  max-width: 80rem;
+  padding-inline: 2rem;
+}
+
+:root {
+  --bar-height: 44px;
+  --header-logo-row: 72px;
+  --header-logo-size: 64px;
+  --header-height: var(--header-logo-row);
+  --stack-offset: calc(var(--bar-height) + var(--header-logo-row));
+  --hero-inner-height: 240px;
+}
+
+@media (max-width: 1023px) {
+  :root {
+    --header-logo-size: 56px;
+  }
 }
 
 @layer base {
-  :root {
-    /* Sticky header hesapları; @theme dışında tutuldu çünkü utility gerekmiyor */
-    --bar-height: 44px;
-    --header-height: 68px;
-    --stack-offset: calc(var(--bar-height) + var(--header-height));
-    --hero-inner-height: 220px; /* iç sayfa hero */
-  }
-
   * {
     box-sizing: border-box;
   }
@@ -82,62 +97,40 @@
     color: var(--color-ink);
     font-family: var(--font-sans);
     font-size: var(--text-base);
-    line-height: 1.6;
+    line-height: 1.5;
   }
 
-  /*
-   * Referans sitede hiçbir öğede yuvarlatma yok; BBVA dili keskin köşeli.
-   * Tarayıcı varsayılanlarını sıfırlayarak dili tutarlı tutuyoruz.
-   */
   button,
   input,
   select,
   textarea {
-    border-radius: 0;
+    border-radius: var(--radius-btn);
     font: inherit;
     color: inherit;
   }
 
-  /*
-   * next/image `fill` mutlak konumlandırma + height:100% kullanır. Genel
-   * `height: auto` kuralı mozaik/kart görsellerini yüksekliği 0'a sıkıştırıyordu.
-   */
-  img:not([data-nimg='fill']),
-  svg {
-    max-width: 100%;
-    height: auto;
-  }
-
-  .home-mosaic {
-    /* Yerleşim HomeMosaic bileşeninde inline grid-area ile veriliyor. */
-  }
-
-  @media (max-width: 639px) {
-    .home-mosaic {
-      min-height: 0 !important;
-      grid-template-columns: 1fr 1fr !important;
-      grid-template-rows: none !important;
-      grid-template-areas: none !important;
-    }
-    .home-mosaic > li {
-      grid-area: auto !important;
-      min-height: 160px;
-      position: relative;
-    }
-    .home-mosaic > li:nth-child(3) {
-      grid-column: 1 / -1;
-      min-height: 200px;
-    }
-  }
-
   :focus-visible {
-    outline: 2px solid var(--color-brand-blue);
+    outline: 2px solid var(--color-brand-navy);
     outline-offset: 2px;
   }
 }
 
-@utility container-page {
-  margin-inline: auto;
-  max-width: var(--container-page);
-  padding-inline: 1rem;
+.field {
+  width: 100%;
+  min-height: 48px;
+  border: 1px solid var(--color-control);
+  border-radius: var(--radius-btn);
+  background: var(--color-surface);
+  padding: 12px 16px;
+  font-size: 0.9375rem;
+  line-height: 1.4;
+  outline: none;
+}
+
+.field:focus {
+  border-color: var(--color-brand-navy);
+}
+
+.field.is-invalid {
+  border-color: #8a1f17;
 }

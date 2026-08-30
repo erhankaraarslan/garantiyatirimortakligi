@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
+import { buttonVariants } from '../../../../components/ui/Button'
 import { Breadcrumb } from '../../../../components/ui/Breadcrumb'
 import { PageHero } from '../../../../components/ui/PageHero'
 import { getPayloadClient, pageHref } from '../../../../lib/data'
@@ -74,12 +75,9 @@ export default async function SearchPage({
               type="search"
               defaultValue={query}
               placeholder={t.placeholder}
-              className="w-full border border-divider bg-surface px-3 py-2.5 outline-none focus:border-brand-blue"
+              className="field rounded-r-none"
             />
-            <button
-              type="submit"
-              className="shrink-0 bg-brand-blue px-6 text-nav font-medium text-white transition-colors hover:bg-brand-blue-mid"
-            >
+            <button type="submit" className={`${buttonVariants.primary} shrink-0 rounded-l-none`}>
               {t.submit}
             </button>
           </div>

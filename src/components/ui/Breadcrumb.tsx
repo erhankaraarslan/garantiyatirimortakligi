@@ -15,7 +15,7 @@ export function Breadcrumb({ items, locale }: { items: Crumb[]; locale: Locale }
     <nav aria-label={locale === 'tr' ? 'Konumunuz' : 'Breadcrumb'} className="py-4">
       <ol className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted">
         <li>
-          <Link href={`/${locale}`} className="hover:text-brand-blue hover:underline">
+          <Link href={`/${locale}`} className="hover:text-brand-blue-mid hover:underline">
             {locale === 'tr' ? 'Ana Sayfa' : 'Home'}
           </Link>
         </li>
@@ -25,7 +25,7 @@ export function Breadcrumb({ items, locale }: { items: Crumb[]; locale: Locale }
             <li key={`${item.label}-${index}`} className="flex items-center gap-x-2">
               <span aria-hidden="true">/</span>
               {item.href && !isLast ? (
-                <Link href={item.href} className="hover:text-brand-blue hover:underline">
+                <Link href={item.href} className="hover:text-brand-blue-mid hover:underline">
                   {item.label}
                 </Link>
               ) : (

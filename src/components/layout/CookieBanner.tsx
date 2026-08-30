@@ -3,6 +3,8 @@
 import Script from 'next/script'
 import { useEffect, useState } from 'react'
 
+import { buttonVariants } from '../ui/Button'
+
 const STORAGE_KEY = 'gyo-cookie-consent'
 
 type Consent = 'accepted' | 'rejected'
@@ -58,7 +60,7 @@ export function CookieBanner({
           role="dialog"
           aria-modal="false"
           aria-label={labels.title}
-          className="fixed inset-x-0 bottom-0 z-[55] border-t border-bar-border bg-surface shadow-[0_-1px_1px_rgba(0,0,0,0.2)]"
+          className="fixed inset-x-0 bottom-0 z-[55] border-t border-bar-border bg-surface shadow-[0_-8px_32px_rgba(18,18,18,0.12)]"
         >
           <div className="container-page flex flex-col gap-4 py-5 lg:flex-row lg:items-center lg:justify-between">
             <div className="max-w-3xl">
@@ -74,14 +76,14 @@ export function CookieBanner({
               <button
                 type="button"
                 onClick={() => decide('rejected')}
-                className="bg-surface-inactive px-6 py-3 text-nav font-medium text-ink transition-colors hover:bg-divider"
+                className={buttonVariants.secondary}
               >
                 {labels.reject}
               </button>
               <button
                 type="button"
                 onClick={() => decide('accepted')}
-                className="bg-teal px-6 py-3 text-nav font-medium text-white transition-colors hover:bg-brand-blue"
+                className={buttonVariants.accent}
               >
                 {labels.accept}
               </button>

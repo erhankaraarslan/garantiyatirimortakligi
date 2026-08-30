@@ -991,6 +991,11 @@ async function seedHomepage(
       mosaic: mosaicFor('en'),
       shortcuts: [
         ...shortcut(
+          '/tr/yatirimci-iliskileri/operasyonel-finansal-veriler/faaliyet-raporlari',
+          'Annual Reports',
+          'Quarterly and annual activity reports in full.',
+        ),
+        ...shortcut(
           '/tr/yatirimci-iliskileri/operasyonel-finansal-veriler/finansal-tablolar-ve-dipnotlar',
           'Financial Statements',
           'Financial statements and footnotes, archived by period.',
@@ -1033,8 +1038,11 @@ async function seedGlobals(
     data: {
       affiliateBar: [
         { label: 'Garanti BBVA', type: 'external', url: 'https://www.garantibbva.com.tr/', isActive: false },
-        { label: 'Garanti BBVA Yatırım', type: 'external', url: 'https://www.garantibbvayatirim.com.tr/', isActive: false },
-        { label: 'Garanti BBVA Portföy', type: 'external', url: 'https://www.garantibbvaportfoy.com.tr/', isActive: false },
+        { label: 'Bonus', type: 'external', url: 'https://www.bonus.com.tr/', isActive: false },
+        { label: 'Yatırım', type: 'external', url: 'https://www.garantibbvayatirim.com.tr/', isActive: false },
+        { label: 'Emeklilik', type: 'external', url: 'https://www.garantibbvaemeklilik.com.tr/', isActive: false },
+        { label: 'Tami', type: 'external', url: 'https://www.tami.com.tr/', isActive: false },
+        { label: 'Kripto', type: 'external', url: 'https://www.garantibbvakripto.com.tr/', isActive: false },
         { label: 'Yatırım Ortaklığı', type: 'page', page: id('/tr/ana-sayfa'), isActive: true },
       ],
       mainMenu: [
@@ -1099,11 +1107,15 @@ async function seedGlobals(
             },
           ],
         },
-        { ...pageLink('/tr/surekli-bilgilendirme-formu', 'Sürekli Bilgilendirme Formu'), columns: [] },
+        { ...pageLink('/tr/surekli-bilgilendirme-formu', 'Bilgilendirme'), columns: [] },
         { ...pageLink('/tr/insan-kaynaklari', 'İnsan Kaynakları'), columns: [] },
       ],
       headerUtility: [pageLink('/tr/bize-ulasin', 'Bize Ulaşın')],
-      headerCta: pageLink('/tr/yatirimci-iliskileri', 'Yatırımcı İlişkileri'),
+      headerCta: {
+        label: 'KAP',
+        type: 'external' as const,
+        url: 'https://kap.org.tr/tr/sirket-bilgileri/ozet/961-garanti-yatirim-ortakligi-a-s',
+      },
       footerColumns: [
         {
           heading: 'Kurumsal',
@@ -1154,11 +1166,24 @@ async function seedGlobals(
         title: 'Garanti Yatırım Ortaklığı A.Ş.',
         description:
           '1996 yılında kurulan Garanti Yatırım Ortaklığı A.Ş. yatırımcı ilişkileri, finansal raporlar ve kurumsal yönetim bilgileri.',
+        image:
+          imageMap.get('/images/home/yatirimciiliskileri.jpg')?.id ??
+          imageMap.get(normalizePath('/images/home/yatirimciiliskileri.jpg'))?.id ??
+          null,
+      },
+      cookieNotice: {
+        text: await toLexical(
+          '<p>Sitemizin çalışması için zorunlu çerezleri kullanıyoruz. İstatistik amaçlı çerezler yalnızca onayınızla yüklenir.</p>',
+        ),
       },
     },
   })
 
-  await payload.updateGlobal({ slug: 'contact-info', locale: 'tr', data: {} })
+  await payload.updateGlobal({
+    slug: 'contact-info',
+    locale: 'tr',
+    data: { formRecipients: 'yo@gyo.com.tr' },
+  })
 
   const navTr = await payload.findGlobal({ slug: 'navigation', locale: 'tr', depth: 0 })
   await payload.updateGlobal({
@@ -1171,11 +1196,16 @@ async function seedGlobals(
     slug: 'site-settings',
     locale: 'en',
     data: {
-      siteName: 'Garanti Yatırım Ortaklığı A.Ş.',
+      siteName: 'Garanti Investment Trust Inc.',
       defaultSeo: {
-        title: 'Garanti Yatırım Ortaklığı A.Ş.',
+        title: 'Garanti Investment Trust Inc.',
         description:
-          'Garanti Yatırım Ortaklığı A.Ş., established in 1996 — investor relations, financial reports and corporate governance.',
+          'Garanti Investment Trust Inc., established in 1996 — investor relations, financial reports and corporate governance.',
+      },
+      cookieNotice: {
+        text: await toLexical(
+          '<p>We use strictly necessary cookies to run this site. Analytics cookies are loaded only with your consent.</p>',
+        ),
       },
     },
   })
@@ -1185,7 +1215,7 @@ async function seedGlobals(
     slug: 'contact-info',
     locale: 'en',
     data: {
-      companyName: contactTr.companyName || 'Garanti Yatırım Ortaklığı A.Ş.',
+      companyName: 'Garanti Investment Trust Inc.',
       address: contactTr.address,
     },
   })

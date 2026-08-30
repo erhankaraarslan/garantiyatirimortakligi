@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
+import { isExternal } from './resolveLink'
 import type { MegaMenuItem } from './MegaMenu'
 
 /**
@@ -34,7 +35,7 @@ export function MobileMenu({
   }, [isOpen])
 
   return (
-    <div className="xl:hidden">
+    <div className="lg:hidden">
       <button
         type="button"
         onClick={() => setIsOpen((value) => !value)}
@@ -65,7 +66,7 @@ export function MobileMenu({
       {isOpen && (
         <div
           id="mobile-menu"
-          className="fixed inset-x-0 bottom-0 top-[--stack-offset] z-50 overflow-y-auto border-t border-bar-border bg-surface"
+          className="fixed inset-x-0 bottom-0 top-[var(--stack-offset)] z-50 overflow-y-auto border-t border-bar-border bg-surface"
         >
           <nav aria-label={labels.menu} className="px-4 py-4">
             <ul className="divide-y divide-bar-border">
@@ -78,7 +79,7 @@ export function MobileMenu({
                     <div className="flex items-center justify-between">
                       <Link
                         href={item.href}
-                        className="flex-1 py-3 font-medium uppercase tracking-wide text-ink"
+                        className="flex-1 py-3 font-medium text-ink"
                       >
                         {item.label}
                       </Link>
@@ -109,7 +110,7 @@ export function MobileMenu({
                         {item.columns.map((column, columnIndex) => (
                           <div key={column.heading ?? columnIndex} className="mb-3">
                             {column.heading && (
-                              <p className="mb-1 text-nav font-bold uppercase text-brand-blue-dark">
+                              <p className="mb-1 text-nav font-medium text-heading">
                                 {column.heading}
                               </p>
                             )}
@@ -135,9 +136,20 @@ export function MobileMenu({
               <ul className="mt-4 space-y-1 border-t border-bar-border pt-4">
                 {utilityLinks.map((link) => (
                   <li key={link.href}>
-                    <Link href={link.href} className="block py-2 text-body">
-                      {link.label}
-                    </Link>
+                    {isExternal(link.href) ? (
+                      <a
+                        href={link.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="block py-2 text-body"
+                      >
+                        {link.label}
+                      </a>
+                    ) : (
+                      <Link href={link.href} className="block py-2 text-body">
+                        {link.label}
+                      </Link>
+                    )}
                   </li>
                 ))}
               </ul>

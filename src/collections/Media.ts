@@ -37,13 +37,31 @@ export const Media: CollectionConfig = {
     staticDir: 'media',
     mimeTypes: ['image/*'],
     imageSizes: [
-      { name: 'thumbnail', width: 400, height: undefined, position: 'centre' },
-      { name: 'card', width: 768, height: undefined, position: 'centre' },
-      { name: 'hero', width: 1600, height: undefined, position: 'centre' },
+      {
+        name: 'thumbnail',
+        width: 400,
+        height: undefined,
+        position: 'centre',
+        formatOptions: { format: 'webp', options: { quality: 85 } },
+      },
+      {
+        name: 'card',
+        width: 960,
+        height: undefined,
+        position: 'centre',
+        formatOptions: { format: 'webp', options: { quality: 90 } },
+      },
+      {
+        name: 'hero',
+        width: 1920,
+        height: undefined,
+        position: 'centre',
+        formatOptions: { format: 'webp', options: { quality: 90 } },
+      },
     ],
     formatOptions: {
       format: 'webp',
-      options: { quality: 82 },
+      options: { quality: 90 },
     },
   },
 }

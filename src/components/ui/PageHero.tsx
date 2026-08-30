@@ -1,23 +1,23 @@
 /**
- * İç sayfa hero'su. Referans sitedeki desen: tam genişlik koyu lacivert zemin,
- * ortalanmış beyaz başlık, ~220px yükseklik, hafif geometrik desen.
- * Kaynak: docs/design-reference/13-about-page.png
+ * İç sayfa kahramanı. Banka içerik sayfalarındaki ~240px lacivert şerit:
+ * Benton Bold 48px başlık, sola hizalı.
  */
 export function PageHero({ title, subtitle }: { title: string; subtitle?: string | null }) {
   return (
     <div className="relative overflow-hidden bg-navy">
-      {/* Referanstaki soluk diyagonal desen */}
       <div
         aria-hidden="true"
-        className="absolute inset-0 opacity-[0.07]"
+        className="pointer-events-none absolute inset-0 opacity-[0.14]"
         style={{
           background:
-            'radial-gradient(circle at 70% 20%, #49a5e6 0%, transparent 45%), linear-gradient(115deg, transparent 45%, #ffffff 46%, transparent 47%)',
+            'radial-gradient(circle at 82% 0%, #02a5a5 0%, transparent 38%), linear-gradient(115deg, transparent 58%, rgba(255,255,255,0.12) 59%, transparent 62%)',
         }}
       />
-      <div className="container-page relative flex min-h-[--hero-inner-height] flex-col items-center justify-center py-12 text-center">
-        <h1 className="text-h2 font-bold text-white md:text-h1">{title}</h1>
-        {subtitle && <p className="mt-3 max-w-2xl text-white/75">{subtitle}</p>}
+      <div className="container-page relative flex min-h-[var(--hero-inner-height)] flex-col justify-center py-12">
+        <h1 className="max-w-4xl text-h1 text-white">{title}</h1>
+        {subtitle && (
+          <p className="mt-3 max-w-2xl text-[17px] font-medium leading-7 text-white/75">{subtitle}</p>
+        )}
       </div>
     </div>
   )

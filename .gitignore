@@ -43,6 +43,10 @@ next-env.d.ts
 /media
 /documents
 
+# Veritabanı dump + medya/PDF taşıma paketi (büyük; sır içerir)
+/cms_tasima
+/cms_tasima.zip
+
 # Eski siteden indirilen HTML anlık görüntüsü ve 268 MB'lık PDF arşivi.
 # Kaynaktan yeniden üretilebilir; repoya girmemeli.
 /.migration

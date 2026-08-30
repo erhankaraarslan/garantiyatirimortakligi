@@ -50,11 +50,17 @@ export async function POST(request: NextRequest) {
     data: { firstName, lastName, email, message, consent, locale },
   })
 
-  const recipient = process.env.CONTACT_FORM_TO
-  if (recipient) {
+  const contact = await payload.findGlobal({ slug: 'contact-info', depth: 0 })
+  const recipients = `${contact.formRecipients ?? ''},${process.env.CONTACT_FORM_TO ?? ''}`
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean)
+  const uniqueRecipients = [...new Set(recipients)]
+
+  if (uniqueRecipients.length > 0) {
     try {
       await payload.sendEmail({
-        to: recipient,
+        to: uniqueRecipients,
         replyTo: email,
         subject: `Web sitesi iletişim formu — ${firstName} ${lastName}`,
         text: [

@@ -1,60 +1,76 @@
 import Image from 'next/image'
 import Link from 'next/link'
 
+import { mediaSrc } from '../../lib/media'
 import type { Media } from '../../payload-types'
 
 export type MosaicTile = {
   title: string
   href: string
-  image: Pick<Media, 'url' | 'alt' | 'width' | 'height'>
+  image: Pick<Media, 'url' | 'alt' | 'width' | 'height' | 'sizes'>
 }
 
-const AREAS = ['kurumsal', 'sbf', 'ir', 'baskan', 'ik', 'vizyon', 'ulasin'] as const
-
 /**
- * Eski ana sayfadaki 7 karelik fotoğraf mozaiği. Oranlar orijinal
- * #home_main (890×360) yerleşimine yakın.
+ * Banka ana sayfasındaki kampanya kartları: görsel, 18px başlık, petrol
+ * “Detaylı Bilgi” bağı. Köşe yuvarlatılmaz; gölge yalnızca hover’da.
  */
-export function HomeMosaic({ tiles }: { tiles: MosaicTile[] }) {
+export function HomeMosaic({
+  tiles,
+  actionLabel,
+}: {
+  tiles: MosaicTile[]
+  actionLabel: string
+}) {
   if (tiles.length === 0) return null
 
   return (
-    <ul
-      className="home-mosaic grid w-full gap-1.5 overflow-hidden min-h-[220px] sm:min-h-[360px] lg:min-h-[420px]"
-      style={{
-        gridTemplateColumns: '250fr 250fr 250fr 145fr',
-        gridTemplateRows: 'minmax(90px, 1.2fr) minmax(56px, 0.75fr) minmax(110px, 1.65fr)',
-        gridTemplateAreas: `
-          "kurumsal ir baskan vizyon"
-          "sbf ir baskan vizyon"
-          "sbf ir ik ulasin"
-        `,
-      }}
-    >
+    <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
       {tiles.map((tile, index) => (
-        <li
-          key={`${tile.href}-${index}`}
-          className="relative overflow-hidden"
-          style={{ gridArea: AREAS[index] ?? 'auto' }}
-        >
-          <Link href={tile.href} className="group absolute inset-0 block">
-            {tile.image.url && (
-              <Image
-                src={tile.image.url}
-                alt={tile.image.alt || tile.title}
-                fill
-                sizes="(max-width: 1024px) 50vw, 400px"
-                className="object-cover transition-transform duration-500 group-hover:scale-105"
-                priority={index < 3}
-              />
-            )}
-            <span className="absolute inset-0 bg-gradient-to-t from-navy/85 via-navy/15 to-transparent" />
-            <span className="absolute inset-x-0 bottom-0 p-2.5 text-[11px] font-medium uppercase tracking-wide text-white sm:p-3 sm:text-sm">
-              {tile.title}
+        <li key={`${tile.href}-${index}`}>
+          <Link
+            href={tile.href}
+            className="group flex h-full flex-col bg-surface transition-shadow duration-300 hover:shadow-[0_8px_24px_rgba(6,33,70,0.08)]"
+          >
+            <span className="relative block aspect-[16/10] overflow-hidden bg-hero">
+              {mediaSrc(tile.image, 'card') && (
+                <Image
+                  src={mediaSrc(tile.image, 'card')!}
+                  alt={tile.image.alt || tile.title}
+                  fill
+                  quality={90}
+                  sizes="(max-width: 1024px) 50vw, 400px"
+                  className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                  priority={index < 3}
+                />
+              )}
+            </span>
+            <span className="flex flex-1 flex-col px-5 pb-6 pt-5">
+              <span className="text-[18px] font-medium leading-snug tracking-[-0.4px] text-heading">
+                {tile.title}
+              </span>
+              <span className="mt-4 inline-flex items-center gap-1.5 text-[15px] font-medium text-teal">
+                {actionLabel}
+                <Chevron />
+              </span>
             </span>
           </Link>
         </li>
       ))}
     </ul>
+  )
+}
+
+function Chevron() {
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 16 16"
+      className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.75"
+    >
+      <path d="M5.5 3.5 11 8l-5.5 4.5" />
+    </svg>
   )
 }

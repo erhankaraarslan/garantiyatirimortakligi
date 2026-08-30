@@ -13,8 +13,8 @@ export type SideNavItem = {
 }
 
 /**
- * Kardeş-sayfa yan menüsü. Eski sitedeki #vmenu davranışını koruyor:
- * aktif bölümün alt sayfaları listelenir. Mobilde açılır-kapanır panel olur.
+ * Bölüm içi yan menü. Banka sitesindeki lacivert blok menü yerine
+ * açık zemin + aktif öğede 3px lacivert çizgi (BBVA nav alt çizgisi).
  */
 export function SideNav({
   title,
@@ -42,13 +42,13 @@ export function SideNav({
               href={item.href}
               aria-current={isActive ? 'page' : undefined}
               className={cn(
-                'block border-b border-white/15 px-4 py-2.5 text-sm transition-colors',
+                'block border-b border-divider px-4 py-2.5 text-sm transition-colors',
                 depth > 0 && 'pl-5',
                 isActive
-                  ? 'bg-brand-blue font-medium text-white'
+                  ? 'bg-surface font-medium text-brand-navy shadow-[inset_3px_0_0_0_var(--color-brand-navy)]'
                   : isAncestor
-                    ? 'bg-brand-blue-dark/90 text-white'
-                    : 'bg-brand-blue-dark/75 text-white/90 hover:bg-brand-blue',
+                    ? 'font-medium text-brand-blue-mid'
+                    : 'text-ink hover:text-brand-blue-mid',
               )}
             >
               {item.label}
@@ -61,13 +61,13 @@ export function SideNav({
   )
 
   return (
-    <nav aria-label={title} className="mb-6 lg:mb-0">
+    <nav aria-label={title} className="mb-6 border border-divider bg-surface lg:mb-0">
       <button
         type="button"
         onClick={() => setIsOpen((value) => !value)}
         aria-expanded={isOpen}
         aria-controls="side-nav-list"
-        className="flex w-full items-center justify-between bg-brand-blue px-4 py-3 text-left text-sm font-medium text-white lg:hidden"
+        className="flex w-full items-center justify-between bg-navy px-4 py-3 text-left text-sm font-medium text-white lg:hidden"
       >
         {labels.toggle}
         <svg
@@ -82,9 +82,7 @@ export function SideNav({
         </svg>
       </button>
 
-      <div className="hidden bg-brand-blue px-4 py-3 text-sm font-medium text-white lg:block">
-        {title}
-      </div>
+      <div className="hidden bg-navy px-4 py-3 text-sm font-medium text-white lg:block">{title}</div>
 
       <div id="side-nav-list" className={cn(!isOpen && 'hidden lg:block')}>
         {renderItems(items)}

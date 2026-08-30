@@ -150,27 +150,24 @@ async function translateNavigation(payload: Payload) {
 }
 
 async function translateSiteGlobals(payload: Payload) {
-  const settings = await payload.findGlobal({ slug: 'site-settings', locale: 'tr', depth: 0 })
   await payload.updateGlobal({
     slug: 'site-settings',
     locale: 'en',
     data: {
-      siteName: settings.siteName || 'Garanti Yatırım Ortaklığı A.Ş.',
+      siteName: 'Garanti Investment Trust Inc.',
       defaultSeo: {
-        title: settings.defaultSeo?.title || 'Garanti Yatırım Ortaklığı A.Ş.',
+        title: 'Garanti Investment Trust Inc.',
         description:
-          'Garanti Yatırım Ortaklığı A.Ş., established in 1996 — investor relations, financial reports and corporate governance.',
+          'Garanti Investment Trust Inc., established in 1996 — investor relations, financial reports and corporate governance.',
       },
     },
   })
 
-  const contact = await payload.findGlobal({ slug: 'contact-info', locale: 'tr', depth: 0 })
   await payload.updateGlobal({
     slug: 'contact-info',
     locale: 'en',
     data: {
-      companyName: contact.companyName || 'Garanti Yatırım Ortaklığı A.Ş.',
-      address: contact.address,
+      companyName: 'Garanti Investment Trust Inc.',
     },
   })
   console.log('  EN site ayarları yazıldı')

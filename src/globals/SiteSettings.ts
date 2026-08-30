@@ -45,7 +45,7 @@ export const SiteSettings: GlobalConfig = {
           label: 'GA4 Measurement ID',
           admin: {
             description:
-              'Eski sitedeki kullanımdan kaldırılmış ga.js (UA-2561843-12) yerine. Çerez onayı alınmadan yüklenmez.',
+              'Google Analytics 4 Measurement ID (G-…). Eski sitedeki UA-2561843-12 geçersiz; yeni GA4 mülkü oluşturulmadan boş bırakın. Çerez onayı alınmadan yüklenmez.',
           },
         },
       ],

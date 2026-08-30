@@ -51,7 +51,7 @@ export function FaqList({ faqs, locale }: { faqs: Faq[]; locale: Locale }) {
           value={query}
           onChange={(event) => setQuery(event.target.value)}
           placeholder={t.placeholder}
-          className="w-full border border-divider bg-surface px-3 py-2.5 text-base outline-none focus:border-brand-blue"
+          className="w-full field"
         />
         <p className="mt-1 text-xs text-muted" aria-live="polite">
           {t.count(filtered.length)}
