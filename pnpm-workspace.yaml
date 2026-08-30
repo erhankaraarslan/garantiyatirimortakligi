@@ -1,3 +1,9 @@
+onlyBuiltDependencies:
+  - esbuild
+  - sharp
+  - unrs-resolver
+  - workerd
+
 allowBuilds:
   esbuild: true
   sharp: true
