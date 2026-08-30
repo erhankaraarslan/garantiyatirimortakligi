@@ -35,9 +35,7 @@ export async function generateMetadata({
 
   return {
     metadataBase: new URL(SITE_URL),
-    title: {
-      default: seo?.title || settings.siteName,
-    },
+    title: seo?.title || settings.siteName,
     description: seo?.description ?? undefined,
     openGraph: ogUrl ? { images: [{ url: ogUrl }] } : undefined,
   }

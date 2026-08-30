@@ -7,15 +7,18 @@ import type { JSXConvertersFunction } from '@payloadcms/richtext-lexical/react'
 
 import { cn } from '../../lib/utils'
 
-const converters: JSXConvertersFunction = ({ defaultConverters: defaults }) => ({
-  ...defaults,
-  ...TableJSXConverter,
-  table: (args) => (
-    <div className="mb-6 max-w-full overflow-x-auto">
-      {TableJSXConverter.table(args)}
-    </div>
-  ),
-})
+const converters: JSXConvertersFunction = ({ defaultConverters: defaults }) => {
+  const table = TableJSXConverter.table
+  return {
+    ...defaults,
+    ...TableJSXConverter,
+    table: (args) => (
+      <div className="mb-6 max-w-full overflow-x-auto">
+        {typeof table === 'function' ? table(args) : table}
+      </div>
+    ),
+  }
+}
 
 /**
  * Lexical içeriğini render eder. Tipografi kuralları `prose` sınıfında değil
