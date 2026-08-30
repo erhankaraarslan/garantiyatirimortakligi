@@ -3,45 +3,73 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
+import { HomeFaqs } from '../../../components/ui/HomeFaqs'
 import { HomeMosaic, type MosaicTile } from '../../../components/ui/HomeMosaic'
-import { RichText } from '../../../components/ui/RichText'
 import { buttonVariants } from '../../../components/ui/Button'
-import { getPayloadClient, pageHref } from '../../../lib/data'
+import {
+  findPageByPath,
+  getPayloadClient,
+  pageHref,
+} from '../../../lib/data'
+import { decorateHomeDocuments, pickLatestActivityReport } from '../../../lib/documents'
+import { firstLexicalParagraph } from '../../../lib/lexical'
 import { mediaSrc } from '../../../lib/media'
-import { formatBytes } from '../../../lib/utils'
+import { cn, formatBytes } from '../../../lib/utils'
 import { isLocale, type Locale } from '../../../lib/i18n'
-import type { Document, Faq, Page } from '../../../payload-types'
+import type { Document, DocumentArchiveItem, Faq, Page } from '../../../payload-types'
 
 const strings = {
   tr: {
     shortcuts: 'Hızlı Erişim',
     latest: 'Son yayımlanan dokümanlar',
     latestAll: 'Tümünü gör',
-    about: 'Kurumsal',
+    about: 'Hakkımızda',
+    aboutMore: 'Kurumsal’a git',
     faq: 'Sıkça sorulan sorular',
     faqAll: 'Tümünü gör',
-    discover: 'Keşfet',
-    inspect: 'Detaylı Bilgi',
+    discover: 'Kurumsal bağlantılar',
     openPdf: 'PDF’i aç',
+    latestReport: 'Son faaliyet raporu',
   },
   en: {
     shortcuts: 'Quick access',
     latest: 'Recently published documents',
     latestAll: 'See all',
-    about: 'Corporate',
+    about: 'About us',
+    aboutMore: 'Go to Corporate',
     faq: 'Frequently asked questions',
     faqAll: 'See all',
-    discover: 'Explore',
-    inspect: 'Learn more',
+    discover: 'Corporate pages',
     openPdf: 'Open PDF',
+    latestReport: 'Latest activity report',
   },
 }
 
-function pickBleedVisual(
-  images: Array<{ url?: string | null; width?: number | null; height?: number | null } | null | undefined>,
+function skipMosaicHref(href: string) {
+  const slug = href.replace(/\/$/, '').split('/').pop() ?? ''
+  return [
+    'bize-ulasin',
+    'contact-us',
+    'yatirimci-iliskileri',
+    'investor-relations',
+    'surekli-bilgilendirme-formu',
+    'public-disclosure-form',
+    'regular-public-disclosure-form',
+    'vizyon',
+    'vision',
+    'vizyon-ve-misyon',
+    'vision-and-mission',
+    'our-vision',
+  ].includes(slug)
+}
+
+function pickHeroVisual(
+  heroImage: { url?: string | null; width?: number | null; height?: number | null } | null,
+  mosaicImages: Array<{ url?: string | null; width?: number | null; height?: number | null } | null | undefined>,
 ) {
-  const usable = images.filter((image): image is NonNullable<(typeof images)[number]> & { url: string } =>
-    Boolean(image?.url),
+  if (heroImage?.url) return heroImage
+  const usable = mosaicImages.filter(
+    (image): image is NonNullable<(typeof mosaicImages)[number]> & { url: string } => Boolean(image?.url),
   )
   if (usable.length === 0) return null
   const landscape = usable.filter((image) => (image.width ?? 1) >= (image.height ?? 1))
@@ -93,7 +121,13 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
 
   const [page, payload] = await Promise.all([loadHome(locale), getPayloadClient()])
 
-  const [{ docs: latestDocuments }, { docs: faqs }, { docs: faqPages }] = await Promise.all([
+  const [
+    { docs: latestDocuments },
+    { docs: faqs },
+    { docs: faqPages },
+    { docs: reportPages },
+    aboutPage,
+  ] = await Promise.all([
     payload.find({
       collection: 'documents',
       locale,
@@ -105,7 +139,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
       collection: 'faqs',
       locale,
       depth: 0,
-      limit: 4,
+      limit: 3,
       sort: 'order',
     }),
     payload.find({
@@ -115,25 +149,71 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
       limit: 1,
       where: { template: { equals: 'faq' }, _status: { equals: 'published' } },
     }),
+    payload.find({
+      collection: 'pages',
+      locale,
+      depth: 3,
+      limit: 1,
+      where: { archiveCategory: { equals: 'faaliyet-raporlari' }, _status: { equals: 'published' } },
+    }),
+    findPageByPath(locale === 'tr' ? ['kurumsal'] : ['corporate'], locale),
   ])
+
+  const documentIds = (latestDocuments as Document[]).map((document) => document.id)
+  let archiveItems: DocumentArchiveItem[] = []
+  if (documentIds.length > 0) {
+    const localized = await payload.find({
+      collection: 'document-archive-items',
+      locale,
+      depth: 0,
+      limit: 50,
+      where: {
+        document: { in: documentIds },
+        language: { equals: locale },
+      },
+    })
+    archiveItems = localized.docs as DocumentArchiveItem[]
+    if (archiveItems.length === 0) {
+      const anyLanguage = await payload.find({
+        collection: 'document-archive-items',
+        locale,
+        depth: 0,
+        limit: 50,
+        where: { document: { in: documentIds } },
+      })
+      archiveItems = anyLanguage.docs as DocumentArchiveItem[]
+    }
+  }
+
+  const decoratedDocuments = decorateHomeDocuments(
+    latestDocuments as Document[],
+    archiveItems as DocumentArchiveItem[],
+    locale,
+  )
+  const latestReport = pickLatestActivityReport(decoratedDocuments)
+  const homeDocuments = (() => {
+    if (!latestReport) return decoratedDocuments.slice(0, 3)
+    return [latestReport, ...decoratedDocuments.filter((document) => document.id !== latestReport.id)].slice(0, 3)
+  })()
 
   const hero = page?.hero
   const heroImage = typeof hero?.image === 'object' ? hero.image : null
-  const ctaPage = typeof hero?.ctaPage === 'object' ? hero.ctaPage : null
   const mosaicTiles: MosaicTile[] = (page?.mosaic ?? []).flatMap((tile) => {
     const target = typeof tile.page === 'object' ? tile.page : null
     const image = typeof tile.image === 'object' ? tile.image : null
     if (!target || !image?.url) return []
-    return [
-      {
-        title: tile.title,
-        href: pageHref(target, locale),
-        image,
-      },
-    ]
-  })
-  const visual = pickBleedVisual([heroImage, ...mosaicTiles.map((tile) => tile.image)])
-  const visualAlt = visual && 'alt' in visual ? (visual.alt ?? '') : ''
+    const href = pageHref(target, locale)
+    if (skipMosaicHref(href)) return []
+    return [{ title: tile.title, href, image }]
+  }).slice(0, 3)
+
+  const visual = pickHeroVisual(
+    heroImage,
+    (page?.mosaic ?? []).map((tile) => (typeof tile.image === 'object' ? tile.image : null)),
+  )
+  const aboutHref = aboutPage ? pageHref(aboutPage, locale) : `/${locale}/${locale === 'tr' ? 'kurumsal' : 'corporate'}`
+  const aboutExcerpt = firstLexicalParagraph(page?.content)
+  const reportsHref = reportPages[0] ? pageHref(reportPages[0], locale) : aboutHref
 
   return (
     <>
@@ -157,22 +237,15 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
         </div>
 
         <div className="container-page relative">
-          <div className="flex flex-col justify-center py-14 lg:min-h-[560px] lg:max-w-[642px] lg:py-16 lg:pr-10">
+          <div className="flex flex-col justify-center py-10 lg:min-h-[520px] lg:max-w-[642px] lg:py-16 lg:pr-10">
             <h1 className="text-h1 text-heading">
               {hero?.headline ?? page?.title ?? 'Garanti Yatırım Ortaklığı A.Ş.'}
             </h1>
             {hero?.subline && (
-              <p className="mt-5 max-w-[34rem] text-[18px] font-medium leading-7 text-heading">
-                {hero.subline}
-              </p>
-            )}
-            {hero?.ctaLabel && ctaPage && (
-              <Link href={pageHref(ctaPage, locale)} className={`${buttonVariants.accent} mt-8 w-fit`}>
-                {hero.ctaLabel}
-              </Link>
+              <p className="mt-5 max-w-[34rem] text-[18px] leading-7 text-body">{hero.subline}</p>
             )}
             {(hero?.badges ?? []).length > 0 && (
-              <ul className="mt-12 flex flex-wrap gap-x-12 gap-y-6">
+              <ul className="mt-10 flex flex-wrap gap-x-12 gap-y-6">
                 {(hero?.badges ?? []).map((badge, index) => (
                   <li key={badge.id ?? index} className="border-l-[3px] border-teal pl-4">
                     <p className="text-[28px] font-bold leading-none tracking-tight text-heading">
@@ -183,39 +256,36 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
                 ))}
               </ul>
             )}
+            <div className="mt-10 flex flex-wrap items-center gap-3">
+              {latestReport && (
+                <a
+                  href={latestReport.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={cn(buttonVariants.primary, 'h-10')}
+                  title={latestReport.title}
+                >
+                  {t.latestReport}
+                </a>
+              )}
+            </div>
           </div>
-        </div>
-
-        <div className="relative aspect-[16/10] w-full lg:hidden">
-          {mediaSrc(visual, 'hero') ? (
-            <Image
-              src={mediaSrc(visual, 'hero')!}
-              alt={visualAlt}
-              fill
-              priority
-              quality={90}
-              sizes="100vw"
-              className="object-cover"
-            />
-          ) : (
-            <div className="absolute inset-0 bg-navy" />
-          )}
         </div>
       </section>
 
       {mosaicTiles.length > 0 && (
         <section className="bg-surface">
-          <div className="container-page py-16 lg:py-[72px]">
-            <h2 className="mb-10 text-h2 text-ink">{t.discover}</h2>
-            <HomeMosaic tiles={mosaicTiles} actionLabel={t.inspect} />
+          <div className="container-page py-10 lg:py-14">
+            <h2 className="mb-6 text-h3 text-ink">{t.discover}</h2>
+            <HomeMosaic tiles={mosaicTiles} />
           </div>
         </section>
       )}
 
       {(page?.shortcuts ?? []).length > 0 && (
         <section className="bg-surface-alt">
-          <div className="container-page py-16 lg:py-[72px]">
-            <h2 className="mb-10 text-h2 text-ink">{t.shortcuts}</h2>
+          <div className="container-page py-12 lg:py-16">
+            <h2 className="mb-8 text-h2 text-ink">{t.shortcuts}</h2>
             <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
               {(page?.shortcuts ?? []).map((shortcut, index) => {
                 const target = typeof shortcut.page === 'object' ? shortcut.page : null
@@ -233,8 +303,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
                       {shortcut.description && (
                         <span className="mt-2 text-sm leading-6 text-body">{shortcut.description}</span>
                       )}
-                      <span className="mt-6 inline-flex items-center gap-1.5 text-[15px] font-medium text-teal">
-                        {t.inspect}
+                      <span className="mt-auto inline-flex items-center pt-6 text-brand-navy" aria-hidden="true">
                         <ArrowIcon />
                       </span>
                     </Link>
@@ -246,22 +315,18 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
         </section>
       )}
 
-      {latestDocuments.length > 0 && (
+      {homeDocuments.length > 0 && (
         <section className="bg-surface">
-          <div className="container-page py-16 lg:py-[72px]">
-            <SectionHeading
-              title={t.latest}
-              href={ctaPage ? pageHref(ctaPage, locale) : undefined}
-              action={t.latestAll}
-            />
+          <div className="container-page py-12 lg:py-16">
+            <SectionHeading title={t.latest} href={reportsHref} action={t.latestAll} />
             <ul className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-              {(latestDocuments as Document[]).map((document) => (
+              {homeDocuments.map((document) => (
                 <li key={document.id}>
                   <a
-                    href={document.url ?? '#'}
+                    href={document.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="group flex h-full min-h-[188px] flex-col border-t-[3px] border-teal bg-surface-alt px-6 py-6 transition-shadow duration-300 hover:shadow-[0_8px_24px_rgba(6,33,70,0.08)]"
+                    className="group flex h-full min-h-[168px] flex-col border-t-[3px] border-teal bg-surface-alt px-6 py-6 transition-shadow duration-300 hover:shadow-[0_8px_24px_rgba(6,33,70,0.08)]"
                   >
                     {document.publishedAt && (
                       <p className="text-[13px] text-muted" suppressHydrationWarning>
@@ -277,9 +342,9 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
                       </p>
                     )}
                     <p className="mt-3 text-[18px] font-medium leading-snug tracking-[-0.4px] text-heading group-hover:text-brand-navy">
-                      {document.title || document.filename}
+                      {document.title}
                     </p>
-                    <p className="mt-auto inline-flex items-center gap-1.5 pt-6 text-[15px] font-medium text-teal">
+                    <p className="mt-auto inline-flex items-center gap-1.5 pt-6 text-[15px] font-medium text-brand-navy">
                       {t.openPdf}
                       {document.filesize ? ` · ${formatBytes(document.filesize)}` : ''}
                       <ArrowIcon />
@@ -292,37 +357,40 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
         </section>
       )}
 
-      {page?.content && (
+      {aboutExcerpt && (
         <section className="bg-surface-alt">
-          <div className="container-page py-16 lg:py-[72px]">
+          <div className="container-page py-12 lg:py-16">
             <h2 className="text-h2 text-ink">{t.about}</h2>
-            <RichText data={page.content} className="mt-8 max-w-3xl" />
+            <p className="mt-6 max-w-3xl text-base leading-relaxed text-body">{aboutExcerpt}</p>
+            <Link
+              href={aboutHref}
+              className="mt-6 inline-flex items-center gap-1.5 text-[15px] font-medium text-brand-navy hover:underline"
+            >
+              {t.aboutMore}
+              <ArrowIcon />
+            </Link>
           </div>
         </section>
       )}
 
       {faqs.length > 0 && (
         <section className="bg-surface">
-          <div className="container-page py-16 lg:py-[72px]">
+          <div className="container-page py-12 lg:py-16">
             <SectionHeading
               title={t.faq}
               href={faqPages[0] ? pageHref(faqPages[0], locale) : undefined}
               action={t.faqAll}
             />
-            <dl className="divide-y divide-divider border-y border-divider">
-              {(faqs as Faq[]).map((faq) => (
-                <div key={faq.id} className="py-6">
-                  <dt className="text-[18px] font-medium tracking-[-0.4px] text-heading">{faq.question}</dt>
-                  <dd className="mt-2 line-clamp-3 max-w-3xl text-[15px] leading-6 text-body">
-                    <RichText data={faq.answer} />
-                  </dd>
-                </div>
-              ))}
-            </dl>
+            <HomeFaqs
+              items={(faqs as Faq[]).map((faq) => ({
+                id: String(faq.id),
+                question: faq.question,
+                answer: faq.answer,
+              }))}
+            />
           </div>
         </section>
       )}
-
     </>
   )
 }
@@ -337,12 +405,12 @@ function SectionHeading({
   action?: string
 }) {
   return (
-    <div className="mb-10 flex items-end justify-between gap-4">
+    <div className="mb-8 flex items-end justify-between gap-4">
       <h2 className="text-h2 text-ink">{title}</h2>
       {href && action && (
         <Link
           href={href}
-          className="mb-1 hidden shrink-0 items-center gap-1.5 text-[15px] font-medium text-teal hover:underline sm:inline-flex"
+          className="mb-1 inline-flex shrink-0 items-center gap-1.5 text-[15px] font-medium text-brand-navy hover:underline"
         >
           {action}
           <ArrowIcon />

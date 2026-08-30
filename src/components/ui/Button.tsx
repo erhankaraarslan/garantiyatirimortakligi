@@ -7,7 +7,7 @@ import { cn } from '../../lib/utils'
  * - primary  → .button.primary (#004481, 48px) — Giriş Yap
  * - accent   → .button.btn-medium (#02A5A5, 56px) — Detaylı Bilgi
  * - secondary → beyaz zemin, 1px #E1E1E1, metin #1973B8
- * - ghost    → dolgusuz, 48px
+ * - outline   → beyaz zemin, 1px #004481 — KAP / ikincil görev
  */
 export const buttonVariants = {
   primary:
@@ -18,6 +18,8 @@ export const buttonVariants = {
     'inline-flex h-12 shrink-0 items-center justify-center rounded-btn border border-control bg-surface px-4 text-[15px] font-medium leading-[22px] text-brand-blue-light transition-colors hover:bg-surface-alt disabled:opacity-60',
   ghost:
     'inline-flex h-12 shrink-0 items-center justify-center px-[11px] text-[15px] font-medium leading-[22px] text-brand-navy transition-colors hover:underline',
+  outline:
+    'inline-flex h-12 shrink-0 items-center justify-center rounded-btn border border-brand-navy bg-surface px-4 text-[15px] font-medium leading-[22px] text-brand-navy transition-colors hover:bg-surface-alt disabled:opacity-60',
 } as const
 
 export type ButtonVariant = keyof typeof buttonVariants

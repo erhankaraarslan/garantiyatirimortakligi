@@ -115,24 +115,24 @@ export async function Header({ locale }: { locale: Locale }) {
             </nav>
 
             <div className="ml-auto flex shrink-0 items-center gap-4 lg:gap-5">
-              <div className="hidden items-center gap-5 lg:flex">
-                <LanguageSwitcher
-                  targetLocale={targetLocale}
-                  href={alternate.href}
-                  hasCounterpart={alternate.hasCounterpart}
-                />
+              <div className="hidden items-center lg:flex">
+                <div className="mr-6 flex items-center border-r border-[#bdbdbd] pr-6">
+                  <LanguageSwitcher
+                    targetLocale={targetLocale}
+                    href={alternate.href}
+                    hasCounterpart={alternate.hasCounterpart}
+                  />
+                </div>
                 {utilityLinks.map((link) => (
                   <Link
                     key={link.href}
                     href={link.href}
-                    className="inline-flex h-10 items-center whitespace-nowrap text-[15px] font-medium text-brand-blue-mid hover:underline"
+                    className="inline-flex items-center whitespace-nowrap text-[15px] font-medium leading-6 text-brand-blue hover:text-navy"
                   >
                     {link.label}
                   </Link>
                 ))}
               </div>
-
-              <span aria-hidden="true" className="hidden h-5 w-px bg-divider lg:block" />
 
               <Link
                 href={t.searchHref}

@@ -957,7 +957,7 @@ async function seedHomepage(
         ...shortcut(
           '/tr/yatirimci-iliskileri/kurumsal-yonetim/genel-kurul',
           'Genel Kurul',
-          'Gündemler, tutanaklar, hazirunlar ve bilgilendirme dökümanları.',
+          'Gündemler, tutanaklar, hazirunlar ve bilgilendirme dokümanları.',
         ),
         ...shortcut(
           '/tr/yatirimci-iliskileri/kurumsal-yonetim',
@@ -1054,6 +1054,7 @@ async function seedGlobals(
               links: [
                 pageLink('/tr/kurumsal', 'Hakkımızda'),
                 pageLink('/tr/vizyon', 'Vizyon ve Misyon'),
+                pageLink('/tr/insan-kaynaklari', 'İnsan Kaynakları'),
                 pageLink('/tr/kurumsal/organizasyon-semasi', 'Organizasyon Şeması'),
                 pageLink('/tr/kurumsal/oduller', 'Ödüller'),
               ],
@@ -1108,7 +1109,6 @@ async function seedGlobals(
           ],
         },
         { ...pageLink('/tr/surekli-bilgilendirme-formu', 'Bilgilendirme'), columns: [] },
-        { ...pageLink('/tr/insan-kaynaklari', 'İnsan Kaynakları'), columns: [] },
       ],
       headerUtility: [pageLink('/tr/bize-ulasin', 'Bize Ulaşın')],
       headerCta: {

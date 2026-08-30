@@ -15,15 +15,15 @@ export function AffiliateBar({ items, locale }: { items: NavLink[]; locale: Loca
     <div className="h-11 border-y border-bar-border bg-bar">
       <nav
         aria-label={locale === 'tr' ? 'Garanti BBVA markaları' : 'Garanti BBVA brands'}
-        className="mx-auto flex h-full max-w-bar items-stretch overflow-x-auto px-3 [scrollbar-width:none] md:justify-center md:px-4 [&::-webkit-scrollbar]:hidden"
+        className="mx-auto flex h-full max-w-bar items-stretch overflow-x-auto px-2 [scrollbar-width:none] md:justify-center md:px-4 [&::-webkit-scrollbar]:hidden"
       >
         <ul className="flex items-stretch">
           {items.map((item, index) => {
             const href = resolveLink(item, locale)
             const className = cn(
-              'relative flex items-center whitespace-nowrap px-3 text-[14px] font-medium leading-[1.15] transition-colors md:px-5',
+              'relative flex items-center whitespace-nowrap px-2 text-[12px] font-medium leading-[1.15] transition-colors md:px-5 md:text-[14px]',
               item.isActive
-                ? 'text-green after:absolute after:inset-x-4 after:bottom-[-1px] after:h-[3px] after:rounded-t-[3px] after:bg-green md:after:inset-x-6'
+                ? 'text-green after:absolute after:inset-x-2 after:bottom-[-1px] after:h-[3px] after:rounded-t-[3px] after:bg-green md:after:inset-x-6'
                 : 'text-ink hover:text-green',
             )
             return (

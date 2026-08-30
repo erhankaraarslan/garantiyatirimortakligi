@@ -77,6 +77,21 @@
 @media (max-width: 1023px) {
   :root {
     --header-logo-size: 56px;
+    --text-h1: 1.75rem;
+    --text-h1--line-height: 1.2;
+    --text-h2: 1.5rem;
+    --text-h2--line-height: 1.25;
+  }
+
+  /* @theme token’ları medya sorgusunda yeniden tanımlanamaz; yardımcı sınıfları burada küçültüyoruz. */
+  .text-h1 {
+    font-size: 1.75rem;
+    line-height: 1.2;
+  }
+
+  .text-h2 {
+    font-size: 1.5rem;
+    line-height: 1.25;
   }
 }
 

@@ -19,7 +19,7 @@ export const getNavigation = (locale: Locale) =>
       const payload = await getPayloadClient()
       return payload.findGlobal({ slug: 'navigation', locale, depth: 4 }) as Promise<Navigation>
     },
-    ['navigation', locale, 'v10'],
+    ['navigation', locale, 'v12'],
     { tags: ['navigation'] },
   )()
 
