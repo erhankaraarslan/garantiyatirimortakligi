@@ -4,7 +4,7 @@
     "builder": "RAILPACK"
   },
   "deploy": {
-    "startCommand": "mkdir -p /data/media /data/documents && rm -rf /app/media /app/documents && ln -s /data/media /app/media && ln -s /data/documents /app/documents && pnpm start",
+    "startCommand": "mkdir -p /data/media /data/documents && ln -sfn /data/media /app/media && ln -sfn /data/documents /app/documents && pnpm start",
     "restartPolicyType": "ON_FAILURE",
     "restartPolicyMaxRetries": 3
   }
