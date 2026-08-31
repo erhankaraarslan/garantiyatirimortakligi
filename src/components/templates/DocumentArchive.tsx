@@ -1,5 +1,6 @@
 import { Accordion, type AccordionItem } from '../ui/Accordion'
 import { DocumentLink } from '../ui/DocumentLink'
+import { toEnglishLabel } from '../../lib/enLabel'
 import type { Locale } from '../../lib/i18n'
 import type { DocumentArchiveItem } from '../../payload-types'
 
@@ -53,7 +54,7 @@ export function DocumentArchive({
             <li key={item.id}>
               <DocumentLink
                 document={item.document}
-                label={documentLabel(item)}
+                label={documentLabel(item, locale)}
                 locale={locale}
               />
             </li>
@@ -69,20 +70,15 @@ export function DocumentArchive({
 /** TR kaynaklı grup başlıklarını EN sayfada okunaklı hale getirir. */
 function localizeGroupLabel(label: string | null | undefined, year: number, locale: Locale): string {
   const fallback = year > 0 ? String(year) : (label ?? '')
-  if (locale !== 'en' || !label) return label || fallback
-
-  return label
-    .replace(/\s*Yılı Faaliyet Raporu/gi, ' Annual Report')
-    .replace(/\s*Yılı Komisyon Bilgileri/gi, ' Commission Information')
-    .replace(/\s*Yılı\s*/gi, ' ')
-    .replace(/Faaliyet Raporu/gi, 'Annual Report')
-    .replace(/Komisyon Bilgileri/gi, 'Commission Information')
-    .trim() || fallback
+  if (!label) return fallback
+  if (locale !== 'en') return label
+  return toEnglishLabel(label) || fallback
 }
 
-function documentLabel(item: DocumentArchiveItem): string {
-  const period = item.period?.trim()
-  const label = item.label?.trim()
+function documentLabel(item: DocumentArchiveItem, locale: Locale): string {
+  const rawPeriod = item.period?.trim() ?? ''
+  const label = item.label?.trim() ?? ''
+  const period = locale === 'en' && rawPeriod ? toEnglishLabel(rawPeriod) : rawPeriod
   if (period && label && period !== label) return `${period} — ${label}`
   return period || label || ''
 }

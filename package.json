@@ -22,7 +22,8 @@
     "migrate:seed": "cross-env NODE_OPTIONS=--no-deprecation tsx --env-file=.env scripts/legacy/seed.ts",
     "migrate:verify": "cross-env NODE_OPTIONS=--no-deprecation tsx --env-file=.env scripts/legacy/verify.ts",
     "migrate:redirects": "cross-env NODE_OPTIONS=--no-deprecation tsx --env-file=.env scripts/legacy/generate-redirects.ts",
-    "migrate:parity": "cross-env NODE_OPTIONS=--no-deprecation tsx --env-file=.env scripts/legacy/en-parity.ts"
+    "migrate:parity": "cross-env NODE_OPTIONS=--no-deprecation tsx --env-file=.env scripts/legacy/en-parity.ts",
+    "migrate:en-complete": "cross-env NODE_OPTIONS=--no-deprecation tsx --env-file=.env scripts/legacy/en-complete.ts"
   },
   "dependencies": {
     "@payloadcms/db-postgres": "3.88.0",

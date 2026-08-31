@@ -27,9 +27,10 @@ import {
   pageHref,
   resolveAlternatePath,
 } from '../../../../lib/data'
+import { mergeArchiveByDocument } from '../../../../lib/enLabel'
 import { isLocale, locales, type Locale } from '../../../../lib/i18n'
 import { lexicalHasReadableText } from '../../../../lib/lexical'
-import type { Page } from '../../../../payload-types'
+import type { DocumentArchiveItem, Page } from '../../../../payload-types'
 
 type Props = {
   params: Promise<{ locale: string; slug: string[] }>
@@ -150,11 +151,6 @@ async function renderTemplate(page: Page, locale: Locale) {
 
   switch (page.template) {
     case 'documentArchive': {
-      /*
-       * Arşiv kayıtları dile göre ayrı: eski sitede İngilizce arşiv sayfaları
-       * kendi (daha az sayıda, İngilizce hazırlanmış) doküman setini
-       * listeliyordu. language alanı bu ayrımı koruyor.
-       */
       const category = page.archiveCategory ?? ''
       const { docs } = await payload.find({
         collection: 'document-archive-items',
@@ -162,29 +158,17 @@ async function renderTemplate(page: Page, locale: Locale) {
         depth: 1,
         limit: 500,
         sort: ['-year', 'order'],
-        where: {
-          category: { equals: category },
-          language: { equals: locale },
-        },
+        where:
+          locale === 'tr'
+            ? { category: { equals: category }, language: { equals: 'tr' } }
+            : { category: { equals: category } },
       })
       /*
-       * Eski sitede faaliyet raporları, bağımsız denetim, sermaye artırımı gibi
-       * arşivler yalnızca Türkçe sayfada duruyordu. EN karşılığı açıldığında
-       * aynı PDF'leri göstermek için TR dilindeki kayıtlara düşüyoruz.
+       * EN sayfada TR arşivindeki PDF'ler de listelenir (eski İngilizce sitede
+       * bir kısmı yoktu). Aynı dosya iki dil kaydında varsa EN etiket tercih edilir.
        */
       const archiveItems =
-        docs.length > 0 || locale === 'tr'
-          ? docs
-          : (
-              await payload.find({
-                collection: 'document-archive-items',
-                locale: 'tr',
-                depth: 1,
-                limit: 500,
-                sort: ['-year', 'order'],
-                where: { category: { equals: category }, language: { equals: 'tr' } },
-              })
-            ).docs
+        locale === 'en' ? mergeArchiveByDocument(docs as DocumentArchiveItem[]) : docs
       return (
         <>
           {intro}
