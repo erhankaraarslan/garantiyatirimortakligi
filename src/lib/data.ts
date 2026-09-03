@@ -3,6 +3,12 @@ import { getPayload } from 'payload'
 
 import config from '../payload.config'
 import type { ContactInfo, Navigation, Page, SiteSetting } from '../payload-types'
+import {
+  lookupAlternate,
+  normalizePathname,
+  staticAlternateEntries,
+  type AlternateTarget,
+} from './alternatePath'
 import type { Locale } from './i18n'
 
 export async function getPayloadClient() {
@@ -257,15 +263,71 @@ export async function getSectionNav(
 }
 
 /**
+ * Tüm yayımlanmış sayfaların TR↔EN yol haritası. Dil değiştirici layout’ta
+ * olduğu için client navigation’da yeniden hesaplanmaz; harita bir kez
+ * yüklenir, mevcut yol client’ta `usePathname` ile bakılır.
+ */
+export const getAlternatePathMap = () =>
+  unstable_cache(
+    async (): Promise<Record<string, AlternateTarget>> => {
+      const map: Record<string, AlternateTarget> = { ...staticAlternateEntries() }
+      try {
+        const payload = await getPayloadClient()
+        const query = {
+          collection: 'pages' as const,
+          depth: 3,
+          limit: 500,
+          pagination: false as const,
+          where: { _status: { equals: 'published' } },
+        }
+        const [tr, en] = await Promise.all([
+          payload.find({ ...query, locale: 'tr' }),
+          payload.find({ ...query, locale: 'en' }),
+        ])
+
+        const enById = new Map((en.docs as Page[]).map((page) => [page.id, page]))
+        const trById = new Map((tr.docs as Page[]).map((page) => [page.id, page]))
+
+        for (const page of tr.docs as Page[]) {
+          if (!page.slug) continue
+          const trHref = pageHref(page, 'tr')
+          const counterpart = enById.get(page.id)
+          map[trHref] = counterpart?.slug
+            ? { href: pageHref(counterpart, 'en'), hasCounterpart: true }
+            : { href: '/en', hasCounterpart: false }
+        }
+
+        for (const page of en.docs as Page[]) {
+          if (!page.slug) continue
+          const enHref = pageHref(page, 'en')
+          const counterpart = trById.get(page.id)
+          map[enHref] = counterpart?.slug
+            ? { href: pageHref(counterpart, 'tr'), hasCounterpart: true }
+            : { href: '/tr', hasCounterpart: false }
+        }
+      } catch {
+        return map
+      }
+      return map
+    },
+    ['alternate-path-map', 'v1'],
+    { tags: ['pages'], revalidate: 60 },
+  )()
+
+/**
  * Bir yolun karşı dildeki eşdeğerini bulur. Aynı Payload dokümanı iki dilde
  * farklı slug taşıdığı için, dokümanı bulup karşı dilde yeniden okuyoruz.
- * Karşılığı yoksa (çevirisi olmayan 18 sayfa) o dilin ana sayfasına düşer.
+ * Karşılığı yoksa o dilin ana sayfasına düşer.
  */
 export async function resolveAlternatePath(
   pathname: string,
   targetLocale: Locale,
-): Promise<{ href: string; hasCounterpart: boolean }> {
-  const segments = pathname.split('/').filter(Boolean).slice(1) // dil kodunu at
+): Promise<AlternateTarget> {
+  const map = await getAlternatePathMap()
+  const path = normalizePathname(pathname)
+  if (map[path]) return lookupAlternate(path, targetLocale, map)
+
+  const segments = path.split('/').filter(Boolean).slice(1)
   const fallback = { href: `/${targetLocale}`, hasCounterpart: false }
   if (segments.length === 0) return { href: `/${targetLocale}`, hasCounterpart: true }
 

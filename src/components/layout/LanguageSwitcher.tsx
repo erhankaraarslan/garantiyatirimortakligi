@@ -1,20 +1,42 @@
-import Link from 'next/link'
+'use client'
 
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+import { useEffect, useState } from 'react'
+
+import {
+  lookupAlternate,
+  withSearchString,
+  type AlternateTarget,
+} from '../../lib/alternatePath'
 import type { Locale } from '../../lib/i18n'
 
 /**
  * Dil değiştirici — Garanti BBVA Kripto header’ı:
  * 24px küre yuvası + hedef dil kodu, #1464A5, hover #062146.
+ *
+ * href layout’ta hesaplanmaz: App Router layout’u client navigation’da
+ * yeniden render olmaz. Mevcut yol `usePathname` ile okunur, karşılık
+ * sunucunun verdiği TR↔EN haritasından bulunur.
  */
 export function LanguageSwitcher({
   targetLocale,
-  href,
-  hasCounterpart,
+  map,
+  className = 'inline-flex h-6 items-center text-[15px] font-medium text-brand-blue hover:text-navy',
 }: {
   targetLocale: Locale
-  href: string
-  hasCounterpart: boolean
+  map: Record<string, AlternateTarget>
+  className?: string
 }) {
+  const pathname = usePathname()
+  const [search, setSearch] = useState('')
+
+  useEffect(() => {
+    setSearch(window.location.search.replace(/^\?/, ''))
+  }, [pathname])
+
+  const target = lookupAlternate(pathname, targetLocale, map)
+  const href = withSearchString(target.href, search)
   const label = targetLocale === 'en' ? 'English' : 'Türkçe'
 
   return (
@@ -24,13 +46,13 @@ export function LanguageSwitcher({
       lang={targetLocale}
       aria-label={label}
       title={
-        hasCounterpart
+        target.hasCounterpart
           ? undefined
           : targetLocale === 'en'
             ? 'This page is not available in English; you will be taken to the English home page.'
             : 'Bu sayfanın Türkçe karşılığı yok; Türkçe ana sayfaya yönlendirileceksiniz.'
       }
-      className="inline-flex h-6 items-center text-[15px] font-medium text-brand-blue hover:text-navy"
+      className={className}
     >
       <span className="inline-flex h-6 w-6 shrink-0 items-center justify-start" aria-hidden="true">
         <svg viewBox="0 0 16 16" className="h-4 w-4" fill="currentColor">

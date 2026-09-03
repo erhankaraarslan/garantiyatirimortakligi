@@ -1,9 +1,8 @@
 import Image from 'next/image'
 import Link from 'next/link'
-import { headers } from 'next/headers'
 
 import { locales, type Locale } from '../../lib/i18n'
-import { getNavigation, getSiteSettings, resolveAlternatePath } from '../../lib/data'
+import { getAlternatePathMap, getNavigation, getSiteSettings } from '../../lib/data'
 import { AffiliateBar } from './AffiliateBar'
 import { LanguageSwitcher } from './LanguageSwitcher'
 import { MegaMenu, type MegaMenuItem } from './MegaMenu'
@@ -32,15 +31,13 @@ const strings = {
 } satisfies Record<Locale, Record<string, string>>
 
 export async function Header({ locale }: { locale: Locale }) {
-  const [nav, settings, headerList] = await Promise.all([
+  const [nav, settings, alternateMap] = await Promise.all([
     getNavigation(locale),
     getSiteSettings(locale),
-    headers(),
+    getAlternatePathMap(),
   ])
 
-  const pathname = headerList.get('x-pathname') ?? `/${locale}`
   const targetLocale = locales.find((code) => code !== locale) as Locale
-  const alternate = await resolveAlternatePath(pathname, targetLocale)
 
   const t = strings[locale]
 
@@ -117,11 +114,7 @@ export async function Header({ locale }: { locale: Locale }) {
             <div className="ml-auto flex shrink-0 items-center gap-4 lg:gap-5">
               <div className="hidden items-center lg:flex">
                 <div className="mr-6 flex items-center border-r border-[#bdbdbd] pr-6">
-                  <LanguageSwitcher
-                    targetLocale={targetLocale}
-                    href={alternate.href}
-                    hasCounterpart={alternate.hasCounterpart}
-                  />
+                  <LanguageSwitcher targetLocale={targetLocale} map={alternateMap} />
                 </div>
                 {utilityLinks.map((link) => (
                   <Link
@@ -166,8 +159,14 @@ export async function Header({ locale }: { locale: Locale }) {
                 utilityLinks={[
                   ...utilityLinks,
                   ...(cta ? [{ label: cta.label, href: cta.href }] : []),
-                  { label: targetLocale.toUpperCase(), href: alternate.href },
                 ]}
+                languageSwitcher={
+                  <LanguageSwitcher
+                    targetLocale={targetLocale}
+                    map={alternateMap}
+                    className="inline-flex items-center py-2 text-[15px] font-medium text-brand-blue hover:text-navy"
+                  />
+                }
                 labels={{ open: t.open, close: t.close, menu: t.menu }}
               />
             </div>

@@ -39,7 +39,16 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params
   if (!isLocale(locale)) return { title: 'Search' }
-  return { title: locale === 'tr' ? 'Arama' : 'Search' }
+  return {
+    title: locale === 'tr' ? 'Arama' : 'Search',
+    alternates: {
+      canonical: searchPath(locale),
+      languages: {
+        tr: searchPath('tr'),
+        en: searchPath('en'),
+      },
+    },
+  }
 }
 
 export default async function SearchPage({

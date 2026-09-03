@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { type ReactNode, useEffect, useState } from 'react'
 
 import { isExternal } from './resolveLink'
 import type { MegaMenuItem } from './MegaMenu'
@@ -14,10 +14,12 @@ import type { MegaMenuItem } from './MegaMenu'
 export function MobileMenu({
   items,
   utilityLinks,
+  languageSwitcher,
   labels,
 }: {
   items: MegaMenuItem[]
   utilityLinks: { label: string; href: string }[]
+  languageSwitcher?: ReactNode
   labels: { open: string; close: string; menu: string }
 }) {
   const [isOpen, setIsOpen] = useState(false)
@@ -132,8 +134,9 @@ export function MobileMenu({
               })}
             </ul>
 
-            {utilityLinks.length > 0 && (
+            {(utilityLinks.length > 0 || languageSwitcher) && (
               <ul className="mt-4 space-y-1 border-t border-bar-border pt-4">
+                {languageSwitcher ? <li>{languageSwitcher}</li> : null}
                 {utilityLinks.map((link) => (
                   <li key={link.href}>
                     {isExternal(link.href) ? (
