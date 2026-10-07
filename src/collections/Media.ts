@@ -1,5 +1,7 @@
 import type { CollectionConfig } from 'payload'
 
+import { uploadsDir } from '../lib/uploadsRoot'
+
 export const Media: CollectionConfig = {
   slug: 'media',
   labels: {
@@ -34,7 +36,7 @@ export const Media: CollectionConfig = {
     },
   ],
   upload: {
-    staticDir: 'media',
+    staticDir: uploadsDir('media'),
     mimeTypes: ['image/*'],
     imageSizes: [
       {

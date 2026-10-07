@@ -55,6 +55,10 @@ Zorunlu ortam değişkenleri: `DATABASE_URL`, `PAYLOAD_SECRET`, `NEXT_PUBLIC_SIT
 
 Git deposunda CMS verisi ve yüklenen dosyalar yoktur. Taşırken Postgres yedeği ile `media/` ve `documents/` klasörlerini de kopyalayın.
 
+Yüklemeler paylaşımlı bir diske (NFS) yazılacaksa `UPLOADS_DIR` ile o klasörü verin ya da `MEDIA_SHARED_MOUNT`'a NFS kaynağını (`sunucu:/export`) yazın; uygulama bağlandığı yeri `/proc/mounts`'tan bulur.
+
+Diske doğrudan erişim yoksa dosya arşivi uygulama üzerinden yüklenebilir: admin olarak giriş yapıp `/api/uploads-import` sayfasını açın, `media/` ve `documents/` klasörlerini içeren `.tgz` arşivini seçin. Sayfa arşivi parça parça yükleyip sunucuda açar, sonra veritabanının beklediği dosyalardan eksik kalan olup olmadığını gösterir. Sunucuda `tar` komutu bulunmalıdır.
+
 ## Eski siteden içerik
 
 İçerik boş bir veritabanına script’lerle aktarılabilir (`pnpm migrate:fetch` … `pnpm migrate:seed`). Bu adımlar eski siteye erişim ve `.migration/` altında bir anlık görüntü ister; günlük geliştirme için gerekli değildir.

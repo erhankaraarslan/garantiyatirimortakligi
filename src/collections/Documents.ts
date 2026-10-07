@@ -1,5 +1,7 @@
 import type { CollectionConfig } from 'payload'
 
+import { uploadsDir } from '../lib/uploadsRoot'
+
 /**
  * Eski sitedeki 432 PDF'in yeni evi. originalPath alanı, /gyo_files/... eski
  * yollarından 301 yönlendirme tablosunu üretmek için kullanılıyor.
@@ -19,7 +21,7 @@ export const Documents: CollectionConfig = {
     read: () => true,
   },
   upload: {
-    staticDir: 'documents',
+    staticDir: uploadsDir('documents'),
     // Arşivde 428 PDF'in yanında 1 docx ve 3 zip bulunuyor
     mimeTypes: [
       'application/pdf',
